@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import useFetch from '../hooks/useFetch'
 import { AuthContext } from '../layout/AuthContext'
-import Chatbot from './Chatbot'
 import { motion } from 'framer-motion'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 
@@ -49,9 +48,7 @@ const Login = () => {
         }
       }
     } catch (err) {
-      if (isAdminRedEmail) {
-        toast.error('Credenciales inválidas o error al iniciar sesión')
-      }
+      toast.error('Credenciales inválidas o error al iniciar sesión')
     }
   }
 
@@ -318,7 +315,6 @@ const Login = () => {
         </motion.div>
       </div>
 
-      <Chatbot />
     </motion.div>
   )
 }

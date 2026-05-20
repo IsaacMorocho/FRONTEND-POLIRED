@@ -13,7 +13,6 @@ import { FaCommentDots, FaBook, FaUsers, FaStore, FaGraduationCap, FaHandshake }
 import { useEffect, useState } from 'react';
 import { FaArrowUp } from 'react-icons/fa';
 import { motion } from 'framer-motion'
-import Chatbot from './Chatbot';
 import Aurora from '../components/Aurora';
 import StarBorder from '../components/StarBorder';
 import useSmoothScroll from '../hooks/useSmoothScroll';
@@ -677,7 +676,6 @@ const Home =()=>{
                     </div>
                 </footer>
             <RegresarBoton />
-        <Chatbot/>
 </motion.div>
         </>
     )

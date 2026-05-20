@@ -1,0 +1,13 @@
+.shine-border-container {
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes shine-animation {
+  0% {
+    background-position: -1000% center;
+  }
+  100% {
+    background-position: 1000% center;
+  }
+}

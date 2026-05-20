@@ -17,20 +17,6 @@ import RedesAR from './pages/RedesAR'
 import Reset from './pages/recuperarpassword'
 import ProtectedRoute from './layout/ProtectedRoute'
 import PublicRoute from './layout/PublicRoute'
-import LoginEstudiante from './pages/Login_Estudiante'
-import RegisterEstudiante from './pages/Register_estudiante'
-import ConfirmEstudiante from './pages/ConfirmEstudiante'
-import DashboardEstudiante from './layout/DashboardEstudiante'
-import { ForgotE } from './pages/ForgotE'
-import RecuperarPasswordE from './pages/RecuperarPasswordE'
-import Compras from "./pages/Compras";
-import ChatPrivadoWrapper from "./layout/ChatPrivadoWrapper";
-import RedesDisponibles from "./pages/Estudiante/Redes/RedesDisponibles";
-import MisRedes from "./pages/Estudiante/Redes/MisRedes";
-import HomeEstudiante from "./pages/Estudiante/HomeEstudiante";
-import RedDetalle from "./pages/Estudiante/Redes/RedDetalle";
-import EditarPublicacion from "./pages/Estudiante/Publicaciones/EditarPublicacion";
-import Perfil from "./pages/Estudiante/Perfil/perfil";
 
 function App() {
   return (
@@ -54,23 +40,7 @@ function App() {
             </PublicRoute>
           }
         />
-        <Route path="confirmar-cuenta/:token" element={<ConfirmEstudiante />} />
-        <Route
-          path="login-estudiante"
-          element={
-            <PublicRoute>
-              <LoginEstudiante />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="register-estudiante"
-          element={
-            <PublicRoute>
-              <RegisterEstudiante />
-            </PublicRoute>
-          }
-        />
+
         <Route
           path="register"
           element={
@@ -80,34 +50,9 @@ function App() {
           }
         />
         <Route path="forgot/:id" element={<Forgot />} />
-        <Route path="estudiante/recuperar/:id" element={<ForgotE />} />
-        <Route path="recuperarpassword-e/:token" element={<RecuperarPasswordE />} />
         <Route path="recuperarpassword/:token" element={<Reset />} />
 
         {/* Protegidas por rol */}
-        {/* ESTUDIANTE */}
-        <Route
-          path="/dashboard-estudiante"
-          element={
-            <ProtectedRoute requiredRole="Estudiante">
-              <DashboardEstudiante />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<HomeEstudiante />} />
-          <Route path="compras" element={<Compras />} />
-          <Route path="redes" element={<RedesDisponibles />} />
-          <Route path="redes/mis-redes" element={<MisRedes />} />
-          <Route path="redes/:id" element={<RedDetalle />} />
-                    <Route 
-            path="redes/:id/editar-publicacion/:publicacionId" 
-            element={<EditarPublicacion />} 
-          />
-          <Route path="perfil" element={<Perfil />} />
-
-        </Route>
-        <Route path="/mensajes" element={<ChatPrivadoWrapper />} />
-
         {/* ADMINISTRADOR DE RED */}
 
         <Route
