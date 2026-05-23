@@ -36,6 +36,7 @@ const Login = () => {
           celular: response.celular,
           email: response.email,
           rol: response.rol,
+          avatar: response.avatar,
         }
         login(response.token, user)
         sessionStorage.setItem('token', response.token)

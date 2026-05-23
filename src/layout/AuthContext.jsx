@@ -17,6 +17,13 @@ export const AuthProvider = ({ children }) => {
     setUser(userObj)
     setIsAuthenticated(true)
   }
+  
+  const updateUser = (updatedFields) => {
+    const updatedUser = { ...user, ...updatedFields }
+    sessionStorage.setItem('user', JSON.stringify(updatedUser))
+    setUser(updatedUser)
+  }
+  
   const logout = () => {
     sessionStorage.removeItem('token')
     sessionStorage.removeItem('user')
@@ -34,7 +41,7 @@ export const AuthProvider = ({ children }) => {
   }, [token])
 
   return (
-    <AuthContext.Provider value={{ token, user, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ token, user, isAuthenticated, login, updateUser, logout }}>
       {children}
     </AuthContext.Provider>
   )

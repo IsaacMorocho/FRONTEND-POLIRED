@@ -47,7 +47,7 @@ const Dashboard = () => {
             </div>
             <Link to="/dashboard">
               <img
-                src="https://cdn-icons-png.flaticon.com/512/4715/4715329.png"
+                src={user?.avatar || "https://cdn-icons-png.flaticon.com/512/4715/4715329.png"}
                 alt="user"
                 className="w-10 h-10 border-2 border-green-600 rounded-full"
               />

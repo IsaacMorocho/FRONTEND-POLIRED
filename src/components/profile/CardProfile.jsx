@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
+import { AuthContext } from '../../layout/AuthContext';
 
 export const CardProfile = () => {
   const [perfil, setPerfil] = useState(null);
   const [subiendo, setSubiendo] = useState(false);
+  const { updateUser } = useContext(AuthContext);
 
   const token = sessionStorage.getItem("token");
 
@@ -40,9 +43,9 @@ export const CardProfile = () => {
     try {
       setSubiendo(true);
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL_M}/api/perfil/avatar`,
+        `${import.meta.env.VITE_BACKEND_URL}/perfil/avatar`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -50,17 +53,25 @@ export const CardProfile = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Error al actualizar el avatar");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.msg || "Error al actualizar el avatar");
+      }
+      
       const data = await response.json();
 
-      console.log("Avatar actualizado:", data);
-
       setPerfil((prev) => ({
-        ...prev,
+        ...prev, 
         avatar: data.avatar,
       }));
+
+      // Actualizar el avatar en el AuthContext para que se refleje en el Dashboard
+      updateUser({ avatar: data.avatar });
+
+      toast.success(data.msg || "Avatar actualizado correctamente");
     } catch (error) {
       console.error("Error al subir avatar:", error);
+      toast.error(error.message || "Error al subir el avatar");
     } finally {
       setSubiendo(false);
     }
