@@ -6,23 +6,50 @@ import { motion } from 'framer-motion'
 const Profile = () => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: -30 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.8, ease: 'easeOut' }}>
-      <h1 
-        style={{ fontFamily: 'Lora, serif' }}
-        className='font-black text-2xl md:text-3xl lg:text-4xl text-gray-600'>Perfil</h1>
-      <hr className='my-2 md:my-4' />
-        <div className="flex flex-col lg:flex-row gap-4 md:gap-6 items-start w-full px-2 md:px-4">
-          <div className="w-full lg:w-2/3">
+      className="space-y-6"
+    >
+      {/* Encabezado */}
+      <div>
+        <h1 
+          style={{ fontFamily: 'Lora, serif' }}
+          className='text-3xl font-bold text-white mb-2'
+        >
+          Mi Perfil
+        </h1>
+        <p className='text-slate-400'>Administra tu información personal y seguridad</p>
+      </div>
+
+      {/* Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Información y Contraseña - 2 columnas */}
+        <div className="lg:col-span-2 space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
             <FormProfile />
-            <CardPassword/>
-          </div>
-          <div className="w-full lg:w-1/3">
-            <CardProfile />
-          </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <CardPassword />
+          </motion.div>
         </div>
+
+        {/* Tarjeta de Perfil - 1 columna */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <CardProfile />
+        </motion.div>
+      </div>
     </motion.div>
   )
 }

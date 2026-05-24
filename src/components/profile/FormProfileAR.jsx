@@ -168,114 +168,121 @@ const FormProfileAR = () => {
   };
 
   return (
-    <motion.form 
-      initial={{ opacity: 0, y: -20 }}
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
-      onSubmit={(e) => e.preventDefault()}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6"
     >
-      <div className="flex flex-col md:flex-row md:gap-4 mb-4 md:mb-5 mt-6 md:mt-8">
-        <div className="md:w-1/2 mb-4 md:mb-0">
-          <label className="mb-2 block text-xs md:text-sm font-semibold">Nombre</label>
+      <h2 className="text-xl font-semibold text-white mb-6">Información Personal</h2>
+      
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Nombre</label>
+            <input
+              type="text"
+              placeholder="Nombre"
+              className={`w-full bg-slate-900 border rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none transition ${
+                touched.nombre && errors.nombre 
+                  ? "border-red-500 focus:border-red-500" 
+                  : "border-slate-700 focus:border-blue-500"
+              }`}
+              value={nombre}
+              onChange={(e) => {
+                const v = e.target.value;
+                const cleaned = normalizeSpaces(v.replace(/\s{2,}/g, " ")).slice(0, NAME_MAX);
+                setNombre(cleaned);
+              }}
+              onBlur={() => {
+                setNombre((prev) => (prev ? toTitleCase(normalizeSpaces(prev)) : prev));
+                setTouched((t) => ({ ...t, nombre: true }));
+              }}
+              aria-invalid={touched.nombre && !!errors.nombre}
+              aria-describedby="nombre-error"
+              maxLength={NAME_MAX + 5}
+              autoComplete="given-name"
+            />
+            {touched.nombre && errors.nombre && (
+              <p id="nombre-error" className="mt-1 text-xs text-red-400">
+                {errors.nombre}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Apellido</label>
+            <input
+              type="text"
+              placeholder="Apellido"
+              className={`w-full bg-slate-900 border rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none transition ${
+                touched.apellido && errors.apellido 
+                  ? "border-red-500 focus:border-red-500" 
+                  : "border-slate-700 focus:border-blue-500"
+              }`}
+              value={apellido}
+              onChange={(e) => {
+                const v = e.target.value;
+                const cleaned = normalizeSpaces(v.replace(/\s{2,}/g, " ")).slice(0, NAME_MAX);
+                setApellido(cleaned);
+              }}
+              onBlur={() => {
+                setApellido((prev) => (prev ? toTitleCase(normalizeSpaces(prev)) : prev));
+                setTouched((t) => ({ ...t, apellido: true }));
+              }}
+              aria-invalid={touched.apellido && !!errors.apellido}
+              aria-describedby="apellido-error"
+              maxLength={NAME_MAX + 5}
+              autoComplete="family-name"
+            />
+            {touched.apellido && errors.apellido && (
+              <p id="apellido-error" className="mt-1 text-xs text-red-400">
+                {errors.apellido}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">Teléfono</label>
           <input
-            type="text"
-            placeholder="Ingrese su nombre"
-            className={`shadow-md block w-full rounded-md border py-1 px-2 text-sm md:text-base ${
-              touched.nombre && errors.nombre ? "border-red-500 text-red-700" : "border-gray-300 text-gray-700"
+            type="tel"
+            placeholder="09XXXXXXXX"
+            className={`w-full bg-slate-900 border rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none transition ${
+              touched.celular && errors.celular 
+                ? "border-red-500 focus:border-red-500" 
+                : "border-slate-700 focus:border-blue-500"
             }`}
-            value={nombre}
+            value={celular}
             onChange={(e) => {
-              const v = e.target.value;
-              const cleaned = normalizeSpaces(v.replace(/\s{2,}/g, " ")).slice(0, NAME_MAX);
-              setNombre(cleaned);
+              setCelular(normalizePhone(e.target.value));
             }}
-            onBlur={() => {
-              setNombre((prev) => (prev ? toTitleCase(normalizeSpaces(prev)) : prev));
-              setTouched((t) => ({ ...t, nombre: true }));
-            }}
-            aria-invalid={touched.nombre && !!errors.nombre}
-            aria-describedby="nombre-error"
-            maxLength={NAME_MAX + 5}
-            autoComplete="given-name"
+            onBlur={() => setTouched((t) => ({ ...t, celular: true }))}
+            inputMode="numeric"
+            pattern="\d*"
+            aria-invalid={touched.celular && !!errors.celular}
+            aria-describedby="celular-error"
+            autoComplete="tel"
           />
-          {touched.nombre && errors.nombre && (
-            <p id="nombre-error" className="mt-1 text-xs text-red-600">
-              {errors.nombre}
+          {touched.celular && errors.celular && (
+            <p id="celular-error" className="mt-1 text-xs text-red-400">
+              {errors.celular}
             </p>
           )}
         </div>
 
-        <div className="md:w-1/2">
-          <label className="mb-2 block text-sm font-semibold">Apellido</label>
-          <input
-            type="text"
-            placeholder="Ingrese su apellido"
-            className={`shadow-md block w-full rounded-md border py-1 px-2 ${
-              touched.apellido && errors.apellido ? "border-red-500 text-red-700" : "border-gray-300 text-gray-700"
-            }`}
-            value={apellido}
-            onChange={(e) => {
-              const v = e.target.value;
-              const cleaned = normalizeSpaces(v.replace(/\s{2,}/g, " ")).slice(0, NAME_MAX);
-              setApellido(cleaned);
-            }}
-            onBlur={() => {
-              setApellido((prev) => (prev ? toTitleCase(normalizeSpaces(prev)) : prev));
-              setTouched((t) => ({ ...t, apellido: true }));
-            }}
-            aria-invalid={touched.apellido && !!errors.apellido}
-            aria-describedby="apellido-error"
-            maxLength={NAME_MAX + 5}
-            autoComplete="family-name"
-          />
-          {touched.apellido && errors.apellido && (
-            <p id="apellido-error" className="mt-1 text-xs text-red-600">
-              {errors.apellido}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="mb-5">
-        <label className="mb-2 block text-sm font-semibold">Celular</label>
-        <input
-          type="tel"
-          placeholder="09XXXXXXXX"
-          className={`shadow-md block w-full rounded-md border py-1 px-2 ${
-            touched.celular && errors.celular ? "border-red-500 text-red-700" : "border-gray-300 text-gray-700"
-          }`}
-          value={celular}
-          onChange={(e) => {
-            setCelular(normalizePhone(e.target.value));
-          }}
-          onBlur={() => setTouched((t) => ({ ...t, celular: true }))}
-          inputMode="numeric"
-          pattern="\d*"
-          aria-invalid={touched.celular && !!errors.celular}
-          aria-describedby="celular-error"
-          autoComplete="tel"
-        />
-        {touched.celular && errors.celular && (
-          <p id="celular-error" className="mt-1 text-xs text-red-600">
-            {errors.celular}
-          </p>
-        )}
-      </div>
-
-      <div className="text-center">
         <button
           type="button"
           onClick={handleActualizar}
           disabled={loading || hasBlockingErrors}
-          className={`bg-white border border-gray-400 text-gray-700 px-3 md:px-4 py-2 rounded shadow-md text-sm md:text-base
-            hover:bg-gray-700 hover:scale-105 duration-200 hover:text-white transition-all ${
-              loading || hasBlockingErrors ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+          className={`w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:shadow-lg transition ${
+            loading || hasBlockingErrors ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          {loading ? "Actualizando..." : "Actualizar Información"}
+          {loading ? "Actualizando..." : "Guardar Cambios"}
         </button>
       </div>
-    </motion.form>
+    </motion.div>
   );
 };
 
