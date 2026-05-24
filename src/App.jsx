@@ -14,6 +14,7 @@ import Usuarios from './pages/Usuarios'
 import Publicaciones from './pages/Publicaciones'
 import Redes from './pages/Redes'
 import RedesAR from './pages/RedesAR'
+import Reportes from './pages/Reportes'
 import Reset from './pages/recuperarpassword'
 import ProtectedRoute from './layout/ProtectedRoute'
 import PublicRoute from './layout/PublicRoute'
@@ -81,6 +82,7 @@ function App() {
           <Route index element={<Profile />} />
           <Route path="usuarios" element={<Usuarios />} />
           <Route path="redes" element={<Redes />} />
+          <Route path="reportes" element={<Reportes />} />
         </Route>
 
         {/* Fallback */}

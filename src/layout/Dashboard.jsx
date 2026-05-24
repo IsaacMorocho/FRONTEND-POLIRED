@@ -108,6 +108,20 @@ const Dashboard = () => {
                   Red Comunitaria
                 </Link>
               </li>
+              <hr className='mt-5 border-gray-700' />
+              <li className='text-center'>
+                <Link
+                  to='/dashboard/reportes'
+                  style={{ fontFamily: 'Lora, serif' }}
+                  className={`${
+                    urlActual === '/dashboard/reportes'
+                      ? 'transition-all duration-700 ease-in-out text-slate-300 bg-gray-700 px-3 py-2 rounded-md text-center'
+                      : 'text-gray-700'
+                  } text-2xl block mt-2 hover:text-slate-400`}
+                >
+                  Reportes
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
