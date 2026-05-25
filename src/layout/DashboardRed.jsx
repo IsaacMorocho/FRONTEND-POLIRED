@@ -1,14 +1,16 @@
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlLogout } from "react-icons/sl";
+import { MdPerson, MdAutoAwesome, MdPublic, MdMenu, MdClose } from 'react-icons/md';
 
 const DashboardRed = () => {
   const location = useLocation();
   const urlActual = location.pathname;
   const navigate = useNavigate();
   const { logout, user, isAuthenticated } = useContext(AuthContext);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Validación de rol
   useEffect(() => {
@@ -33,117 +35,148 @@ const DashboardRed = () => {
     navigate('/login');
   };
 
+  const navItems = [
+    { path: '/dashboardRed/perfilAR', label: 'Perfil', icon: MdPerson },
+    { path: '/dashboardRed/publicaciones', label: 'Publicaciones', icon: MdAutoAwesome },
+    { path: '/dashboardRed/redesAR', label: 'Red Comunitaria', icon: MdPublic },
+  ];
+
+  const isActive = (path) => urlActual === path;
+
   return (
-    <>
-      {/* Encabezado */}
-      <div className="w-full bg-gray-700 py-3 px-4 flex flex-wrap items-center justify-between gap-4 z-50">
-        <div className="flex items-center gap-2">
-          <img
-            src="/images/logo_admin.png"
-            alt="logo"
-            className="rounded-full w-10 h-10"
-          />
-          <span
-            style={{ fontFamily: 'Lora, serif' }}
-            className="text-lg font-semibold text-slate-100 block lg:hidden"
-          >
-            PANEL DE CONTROL
-          </span>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Header */}
+      <div className="sticky top-0 z-50 backdrop-blur-md bg-slate-900/95 border-b border-slate-800">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <img
+                src="/images/logo_actual.png"
+                alt="PoliRED"
+                className="w-10 h-10 rounded-full"
+              />
+              <span
+                style={{ fontFamily: 'Lora, serif' }}
+                className="hidden sm:block text-lg font-semibold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+              >
+                PoliRED Admin Red
+              </span>
+            </div>
 
-        <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 text-2xl
-           font-semibold text-slate-100 tracking-widest" style={{ fontFamily: 'Lora, serif' }}>
-          PANEL DE CONTROL
-        </div>
+            {/* Center - User Info */}
+            <div className="hidden md:flex items-center gap-2">
+              <div className="text-sm text-slate-300">
+                <p className="font-semibold">{user?.nombre}</p>
+                <p className="text-xs text-slate-400">{user?.rol}</p>
+              </div>
+            </div>
 
-        <div className="flex items-center gap-3 flex-wrap justify-end">
-          <div className="text-sm sm:text-md font-semibold text-slate-100 text-center">
-            Administrador de Red - {user ? `${user.nombre} ${user.apellido}` : ''}
+            {/* Right - Avatar & Logout */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleLogout}
+                className="hidden sm:flex items-center justify-center gap-2 text-sm text-white bg-red-600/80 hover:bg-red-700 px-3 py-2 rounded-lg transition"
+              >
+                <SlLogout className="w-4 h-4" />
+                <span>Cerrar Sesión</span>
+              </button>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden text-slate-300 hover:text-white"
+              >
+                {mobileMenuOpen ? <MdClose size={24} /> : <MdMenu size={24} />}
+              </button>
+            </div>
           </div>
-          <Link to="/dashboardRed/perfilAR">
-            <img
-              src={user?.avatar || "https://cdn-icons-png.flaticon.com/512/4715/4715329.png"}
-              alt="user"
-              className="w-10 h-10 border-2 border-green-600 rounded-full"
-            />
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center text-white text-sm sm:text-md hover:bg-red-900 bg-red-800 px-3 py-2 rounded-lg">
-            Cerrar Sesión
-            <SlLogout className="h-5 w-9" />
-          </button>
         </div>
       </div>
 
-      {/* Layout */}
-      <div className='md:flex md:min-h-screen'>
-        <div className='md:w-1/6 bg-slate-300 px-5 py-4'>
-          <div className='sticky top-16'>
-            <ul className='mt-5 py-45'>
-              <li className='text-center text-2xl'>
-                <Link
-                  to='/dashboardRed/perfilAR'
-                  style={{ fontFamily: 'Lora, serif' }}
-                  className={`${
-                    urlActual === '/dashboardRed/perfilAR'
-                      ? 'transition-all duration-700 ease-in-out text-slate-300 bg-gray-700 px-3 py-2 rounded-md text-center'
-                      : 'text-gray-700'
-                  } text-2xl block mt-2 hover:text-slate-400`}
-                >
-                  Perfil
-                </Link>
-              </li>
-              <hr className='mt-5 border-gray-700' />
-
-              <li className='text-center'>
-                <Link
-                  to='/dashboardRed/publicaciones'
-                  style={{ fontFamily: 'Lora, serif' }}
-                  className={`${
-                    urlActual === '/dashboardRed/publicaciones'
-                      ? 'transition-all duration-700 ease-in-out text-slate-300 bg-gray-700 px-3 py-2 rounded-md text-center'
-                      : 'text-gray-700'
-                  } text-2xl block mt-2 hover:text-slate-400`}
-                >
-                  Publicaciones
-                </Link>
-              </li>
-              <hr className='mt-5 border-gray-700' />
-              <li className='text-center'>
-                <Link
-                  to='/dashboardRed/redesAR'
-                  style={{ fontFamily: 'Lora, serif' }}
-                  className={`${
-                    urlActual === '/dashboardRed/redesAR'
-                      ? 'transition-all duration-700 ease-in-out text-slate-300 bg-gray-700 px-3 py-2 rounded-md text-center'
-                      : 'text-gray-700'
-                  } text-2xl block mt-2 hover:text-slate-400`}
-                >
-                  Red Comunitaria
-                </Link>
-              </li>
+      {/* Main Layout */}
+      <div className='flex flex-col md:flex-row md:min-h-[calc(100vh-64px)]'>
+        {/* Sidebar - Desktop */}
+        <div className='hidden md:block w-64 bg-slate-900 border-r border-slate-800'>
+          <nav className='sticky top-16 p-6'>
+            <ul className='space-y-2'>
+              {navItems.map(({ path, label, icon: Icon }) => (
+                <li key={path}>
+                  <Link
+                    to={path}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition duration-300 ${
+                      isActive(path)
+                        ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 border border-blue-500/50 text-white'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+                    }`}
+                  >
+                    <Icon size={20} />
+                    <span style={{ fontFamily: 'Lora, serif' }}>{label}</span>
+                  </Link>
+                </li>
+              ))}
             </ul>
-          </div>
+          </nav>
         </div>
 
-        {/* Contenido dinámico */}
-        <div className='flex-1 flex flex-col justify-between h-screen bg-gray-100'>
-          <div className='overflow-y-scroll p-8 mt-4'>
+        {/* Mobile Navigation Menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className='md:hidden bg-slate-800 border-b border-slate-700'
+            >
+              <nav className='p-4 space-y-2'>
+                {navItems.map(({ path, label, icon: Icon }) => (
+                  <Link
+                    key={path}
+                    to={path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition duration-300 ${
+                      isActive(path)
+                        ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 border border-blue-500/50 text-white'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+                    }`}
+                  >
+                    <Icon size={20} />
+                    <span>{label}</span>
+                  </Link>
+                ))}
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 text-sm text-white bg-red-600/80 hover:bg-red-700 px-3 py-2 rounded-lg transition mt-2"
+                >
+                  <SlLogout className="w-4 h-4" />
+                  Salir
+                </button>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Main Content */}
+        <div className='flex-1 overflow-auto'>
+          <div className='max-w-6xl mx-auto p-4 sm:p-6 lg:p-8'>
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.key}
-                initial={{ opacity: 0, y: -30 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}>
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+              >
                 <Outlet /> {/* Aquí se renderiza perfilAR, publicaciones, etc */}
               </motion.div>
             </AnimatePresence>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

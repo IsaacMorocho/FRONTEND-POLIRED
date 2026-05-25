@@ -54,8 +54,8 @@ export const Forgot = () => {
             type="email"
             placeholder="ejemplo@correo.com"
             className="block w-full rounded-md border border-gray-400 bg-white/70 
-                       focus:border-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-200 
-                       py-2 px-3 text-gray-800 placeholder-gray-500"
+                        focus:border-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-200 
+                        py-2 px-3 text-gray-800 placeholder-gray-500"
             {...register("email", { required: "El correo electrónico es obligatorio" })}
           />
           {errors.email && <p className="text-red-800 mt-1">{errors.email.message}</p>}
