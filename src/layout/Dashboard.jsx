@@ -38,7 +38,7 @@ const Dashboard = () => {
             {/* Logo */}
             <div className="flex items-center gap-3">
               <img
-                src="/images/logo_admin.png"
+                src="/images/logo_actual.png"
                 alt="PoliRED"
                 className="w-10 h-10 rounded-full"
               />
@@ -60,19 +60,13 @@ const Dashboard = () => {
 
             {/* Right - Avatar & Logout */}
             <div className="flex items-center gap-3">
-              <Link to="/dashboard" className="hidden md:block">
-                <img
-                  src={user?.avatar || "https://cdn-icons-png.flaticon.com/512/4715/4715329.png"}
-                  alt="user"
-                  className="w-9 h-9 rounded-full border border-blue-500 hover:border-purple-500 transition"
-                />
-              </Link>
+
               <button
                 onClick={handleLogout}
                 className="hidden sm:flex items-center justify-center gap-2 text-sm text-white bg-red-600/80 hover:bg-red-700 px-3 py-2 rounded-lg transition"
               >
                 <SlLogout className="w-4 h-4" />
-                <span>Salir</span>
+                <span>Cerrar Sesión</span>
               </button>
 
               {/* Mobile Menu Button */}

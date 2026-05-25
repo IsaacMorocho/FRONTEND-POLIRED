@@ -6,9 +6,9 @@ import { AuthContext } from '../../layout/AuthContext';
 export const CardProfile = () => {
   const [perfil, setPerfil] = useState(null);
   const [subiendo, setSubiendo] = useState(false);
-  const { updateUser } = useContext(AuthContext);
+  const { updateUser, token: contextToken, user } = useContext(AuthContext);
 
-  const token = sessionStorage.getItem("token");
+  const token = contextToken || sessionStorage.getItem("token");
 
   const fetchPerfil = async () => {
     if (!token) return;
@@ -29,9 +29,18 @@ export const CardProfile = () => {
     }
   };
 
+  // Cargar perfil al montar el componente
   useEffect(() => {
     fetchPerfil();
   }, []);
+
+  // Recargar perfil cuando cambie el usuario en el contexto
+  // Esto ocurre cuando FormProfile actualiza el perfil y llama a login()
+  useEffect(() => {
+    if (user && user.nombre) {
+      fetchPerfil();
+    }
+  }, [user]);
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];

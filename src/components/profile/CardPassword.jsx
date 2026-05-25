@@ -43,9 +43,9 @@ const CardPassword = () => {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/superadmin/actualizar-password`,
+        `${import.meta.env.VITE_BACKEND_URL}/superadmin/actualizar-password/`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

@@ -135,14 +135,12 @@ const Home =()=>{
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
-                                                className='flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors'
+                                                className='relative flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
                                             >
-                                                <div className='flex items-center justify-center h-14 w-14 rounded-lg bg-purple-600 text-white'>
-                                                    <FaCommentDots className='w-7 h-7' />
-                                                </div>
-                                                <div>
-                                                    <h3 className='text-white font-bold text-lg'>Chats en tiempo real</h3>
-                                                    <p className='text-gray-300 text-sm mt-2'>Comunicate con tus compañeros al instante.</p>
+                                                <FaCommentDots className='absolute bottom-0 right-0 w-32 h-32 text-purple-600 opacity-15 -mb-8 -mr-8' />
+                                                <div className='relative z-10'>
+                                                    <h3 className='text-white font-bold text-xl'>Chats en tiempo real</h3>
+                                                    <p className='text-gray-300 text-base mt-2'>Comunicate con tus compañeros al instante.</p>
                                                 </div>
                                             </motion.div>
 
@@ -152,14 +150,12 @@ const Home =()=>{
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-                                                className='flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors'
+                                                className='relative flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
                                             >
-                                                <div className='flex items-center justify-center h-14 w-14 rounded-lg bg-purple-600 text-white'>
-                                                    <FaBook className='w-7 h-7' />
-                                                </div>
-                                                <div>
-                                                    <h3 className='text-white font-bold text-lg'>Comparte recursos</h3>
-                                                    <p className='text-gray-300 text-sm mt-2'>Publica y encuentra apuntes, guías y más.</p>
+                                                <FaBook className='absolute bottom-0 right-0 w-32 h-32 text-purple-600 opacity-15 -mb-8 -mr-8' />
+                                                <div className='relative z-10'>
+                                                    <h3 className='text-white font-bold text-xl'>Comparte recursos</h3>
+                                                    <p className='text-gray-300 text-base mt-2'>Publica y encuentra apuntes, guías y más.</p>
                                                 </div>
                                             </motion.div>
 
@@ -169,14 +165,12 @@ const Home =()=>{
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.3 }}
-                                                className='flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors'
+                                                className='relative flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
                                             >
-                                                <div className='flex items-center justify-center h-14 w-14 rounded-lg bg-purple-600 text-white'>
-                                                    <FaUsers className='w-7 h-7' />
-                                                </div>
-                                                <div>
-                                                    <h3 className='text-white font-bold text-lg'>Red universitaria</h3>
-                                                    <p className='text-gray-300 text-sm mt-2'>Conéctate con estudiantes de toda la EPN.</p>
+                                                <FaUsers className='absolute bottom-0 right-0 w-32 h-32 text-purple-600 opacity-15 -mb-8 -mr-8' />
+                                                <div className='relative z-10'>
+                                                    <h3 className='text-white font-bold text-xl'>Red universitaria</h3>
+                                                    <p className='text-gray-300 text-base mt-2'>Conéctate con estudiantes de toda la EPN.</p>
                                                 </div>
                                             </motion.div>
 
@@ -186,14 +180,12 @@ const Home =()=>{
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
-                                                className='flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors'
+                                                className='relative flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
                                             >
-                                                <div className='flex items-center justify-center h-14 w-14 rounded-lg bg-purple-600 text-white'>
-                                                    <FaHandshake className='w-7 h-7' />
-                                                </div>
-                                                <div>
-                                                    <h3 className='text-white font-bold text-lg'>Construye tu comunidad</h3>
-                                                    <p className='text-gray-300 text-sm mt-2'>Crea grupos y espacios para estudiantes con intereses similares.</p>
+                                                <FaHandshake className='absolute bottom-0 right-0 w-32 h-32 text-purple-600 opacity-15 -mb-8 -mr-8' />
+                                                <div className='relative z-10'>
+                                                    <h3 className='text-white font-bold text-xl'>Construye tu comunidad</h3>
+                                                    <p className='text-gray-300 text-base mt-2'>Crea grupos y espacios para estudiantes con intereses similares.</p>
                                                 </div>
                                             </motion.div>
 
@@ -203,14 +195,12 @@ const Home =()=>{
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.5 }}
-                                                className='flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors'
+                                                className='relative flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
                                             >
-                                                <div className='flex items-center justify-center h-14 w-14 rounded-lg bg-purple-600 text-white'>
-                                                    <FaStore className='w-7 h-7' />
-                                                </div>
-                                                <div>
-                                                    <h3 className='text-white font-bold text-lg'>Compra y venta de libros</h3>
-                                                    <p className='text-gray-300 text-sm mt-2'>Intercambia libros y materiales académicos con otros estudiantes.</p>
+                                                <FaStore className='absolute bottom-0 right-0 w-32 h-32 text-purple-600 opacity-15 -mb-8 -mr-8' />
+                                                <div className='relative z-10'>
+                                                    <h3 className='text-white font-bold text-xl'>Compra y venta de libros</h3>
+                                                    <p className='text-gray-300 text-base mt-2'>Intercambia libros y materiales académicos con otros estudiantes.</p>
                                                 </div>
                                             </motion.div>
 
@@ -220,14 +210,12 @@ const Home =()=>{
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.6 }}
-                                                className='flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors'
+                                                className='relative flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
                                             >
-                                                <div className='flex items-center justify-center h-14 w-14 rounded-lg bg-purple-600 text-white'>
-                                                    <FaGraduationCap className='w-7 h-7' />
-                                                </div>
-                                                <div>
-                                                    <h3 className='text-white font-bold text-lg'>Artefactos universitarios</h3>
-                                                    <p className='text-gray-300 text-sm mt-2'>Vende y compra artículos, equipos y recursos estudiantiles.</p>
+                                                <FaGraduationCap className='absolute bottom-0 right-0 w-32 h-32 text-purple-600 opacity-15 -mb-8 -mr-8' />
+                                                <div className='relative z-10'>
+                                                    <h3 className='text-white font-bold text-xl'>Artefactos universitarios</h3>
+                                                    <p className='text-gray-300 text-base mt-2'>Vende y compra artículos, equipos y recursos estudiantiles.</p>
                                                 </div>
                                             </motion.div>
                                         </div>
@@ -275,7 +263,7 @@ const Home =()=>{
                                         <h3 className='text-white text-5xl sm:text-6xl md:text-7xl font-bold mb-4'>
                                             +<CountUp
                                                 from={0}
-                                                to={200}
+                                                to={400}
                                                 separator=","
                                                 direction="up"
                                                 duration={1}
