@@ -12,7 +12,8 @@ import { SiCashapp } from "react-icons/si";
 import { FaCommentDots, FaBook, FaUsers, FaStore, FaGraduationCap, FaHandshake } from "react-icons/fa6";
 import { useEffect, useState } from 'react';
 import { FaArrowUp } from 'react-icons/fa';
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { IoClose } from 'react-icons/io5';
 import Aurora from '../components/Aurora';
 import StarBorder from '../components/StarBorder';
 import useSmoothScroll from '../hooks/useSmoothScroll';
@@ -22,6 +23,127 @@ import HeroWithAnimatedTitle from '../components/HeroWithAnimatedTitle';
 import CountUp from '../components/CountUp';
 import CommentsLoop from '../components/CommentsLoop';
 import RotatingText from '../components/RotatingText';
+
+// Contenido de Política de Privacidad
+const POLITICA_PRIVACIDAD = `# POLÍTICA DE PRIVACIDAD DE POLIRED
+
+**Versión:** 1.0
+**Fecha de vigencia:** Lunes 25 de mayo del 2026
+
+### 1. Introducción y responsable del tratamiento
+PoliRed respeta su privacidad y está comprometida a proteger sus datos personales. Esta Política de Privacidad explica cómo recopilamos, usamos, compartimos y protegemos su información cuando utiliza nuestra aplicación móvil y los servicios asociados. A los efectos de la Ley Orgánica de Protección de Datos Personales (LOPDP) del Ecuador, el responsable del tratamiento de sus datos es Polired - Ecosistema Politecnico, con domicilio en Quito, Ecuador.
+
+### 2. Datos que recopilamos
+Recopilamos únicamente la información necesaria para brindarle el mejor servicio dentro de nuestra red universitaria:
+*   **Datos de registro:** Correo electrónico institucional (requerido para verificación), nombre, apellido y carrera.
+*   **Datos de perfil (Opcionales):** Fotografía de perfil y texto de biografía (información que usted decide hacer pública dentro de la red).
+*   **Contenido generado por el usuario:** Publicaciones de texto e imágenes, comentarios, respuestas a comentarios, mensajes directos (chat privado), "me gusta" y elementos guardados.
+*   **Datos técnicos y de uso:** Token de dispositivo (exclusivamente para enviar notificaciones push en tiempo real) y registros de actividad básicos o "logs" necesarios para el mantenimiento y depuración del sistema.
+
+*Nota: PoliRed no recopila datos financieros, datos de tarjetas de crédito ni utiliza cookies de seguimiento o identificadores para publicidad de terceros.*
+
+### 3. Cómo usamos los datos
+Sus datos personales se utilizan exclusivamente para los siguientes fines:
+*   Crear, verificar y administrar su cuenta como estudiante universitario.
+*   Proporcionar las funcionalidades core de la aplicación (mostrar su perfil, procesar sus publicaciones, mensajes y redes comunitarias).
+*   Enviar notificaciones en tiempo real sobre interacciones relevantes (como nuevos mensajes, comentarios o likes).
+*   Garantizar la seguridad de la plataforma, prevenir fraudes, suplantación de identidad o comportamientos abusivos.
+*   Mejorar el rendimiento técnico de la aplicación analizando métricas de uso generales.
+
+### 4. Base legal del tratamiento
+De conformidad con la LOPDP, procesamos sus datos fundamentados en las siguientes bases legales:
+*   **Consentimiento explícito:** Al registrarse y crear un perfil en PoliRed.
+*   **Ejecución de un contrato:** Para poder brindarle los servicios de red social, mensajería y notificaciones acordados en nuestros Términos y Condiciones.
+*   **Interés legítimo:** Para garantizar la seguridad de la red y optimizar la experiencia técnica de nuestros usuarios.
+
+### 5. Compartición de datos
+**PoliRed NO vende, alquila ni comercializa sus datos personales a terceros bajo ninguna circunstancia.**
+Solo compartimos la información estrictamente necesaria con proveedores de infraestructura tecnológica que actúan como encargados del tratamiento, sujetos a estrictos acuerdos de confidencialidad. Específicamente, utilizamos el servicio **Pusher** de manera exclusiva para facilitar la transmisión de notificaciones en tiempo real. 
+
+### 6. Retención de datos
+Conservaremos sus datos personales mientras su cuenta de PoliRed permanezca activa. Si usted decide eliminar su cuenta, sus datos de perfil y credenciales de acceso serán eliminados de nuestras bases de datos de forma inmediata. Sin embargo, podríamos retener información de manera anonimizada o por el tiempo estrictamente necesario que exijan las obligaciones legales aplicables en Ecuador.
+
+### 7. Derechos del usuario
+Como titular de los datos y de acuerdo con la LOPDP, usted goza de los siguientes derechos:
+*   **Acceso:** Conocer qué datos personales suyos tenemos almacenados.
+*   **Rectificación:** Corregir datos inexactos o incompletos.
+*   **Eliminación (Derecho al olvido):** Solicitar la eliminación total de su cuenta y sus datos.
+*   **Portabilidad:** Recibir sus datos en un formato estructurado y legible.
+*   **Oposición y suspensión:** Oponerse a ciertos usos de sus datos o solicitar la suspensión temporal del tratamiento.
+
+Para ejercer cualquiera de estos derechos, puede escribirnos directamente a nuestro correo de contacto proporcionado al final de este documento.
+
+### 8. Seguridad de los datos
+Hemos implementado medidas técnicas, administrativas y organizativas robustas (como el uso de conexiones cifradas y un servidor propio de almacenamiento de imágenes) diseñadas para proteger sus datos personales contra el acceso no autorizado, la pérdida, alteración o destrucción.
+
+### 9. Datos de menores
+PoliRed es una red social exclusiva para estudiantes universitarios. Por lo tanto, nuestros servicios están dirigidos estrictamente a personas mayores de 18 años. No recopilamos conscientemente datos de menores de edad. Si detectamos que una cuenta pertenece a un menor, procederemos a eliminarla inmediatamente.
+
+### 10. Cambios a esta política
+Podemos actualizar esta Política de Privacidad periódicamente para reflejar cambios legales o mejoras operativas. Cualquier cambio sustancial será notificado a los usuarios activos a través de la aplicación o al correo electrónico institucional asociado a su cuenta, antes de que las modificaciones entren en vigor.
+
+### 11. Contacto
+Si tiene alguna pregunta, inquietud o desea ejercer sus derechos de privacidad, por favor contáctenos en:
+**Correo electrónico:** soportepolired@gmail.com`;
+
+// Contenido de Términos y Condiciones
+const TERMINOS_CONDICIONES = `# TÉRMINOS Y CONDICIONES DE USO
+
+**Versión:** 1.0
+**Fecha de vigencia:** Lunes 25 de mayo del 2026
+
+### 1. Aceptación de los términos
+Al descargar, acceder y registrarse en la aplicación móvil PoliRed ("la Aplicación"), usted acepta regirse legalmente por los presentes Términos y Condiciones de Uso. Si no está de acuerdo con alguno de estos términos, no debe utilizar nuestros servicios.
+
+### 2. Elegibilidad
+El uso de PoliRed es estrictamente exclusivo para estudiantes universitarios activos. Para crear una cuenta, es un requisito obligatorio poseer y validar un correo electrónico institucional universitario válido. PoliRed se reserva el derecho de rechazar registros o revocar el acceso si se determina que un usuario no cumple con este criterio de elegibilidad.
+
+### 3. Cuenta de usuario
+Usted es el único responsable de mantener la confidencialidad de sus credenciales de acceso y de todas las actividades que ocurran bajo su cuenta. 
+*   Se prohíbe terminantemente la creación de cuentas falsas, el uso de correos institucionales de terceros o la suplantación de identidad.
+*   Usted se compromete a notificar de inmediato a PoliRed sobre cualquier uso no autorizado de su cuenta.
+
+### 4. Contenido del usuario
+Usted retiene todos los derechos de propiedad intelectual sobre los textos, imágenes y comentarios que publique a través de PoliRed. Sin embargo, al publicar contenido, usted otorga a PoliRed una licencia mundial, no exclusiva y libre de regalías para alojar, almacenar y mostrar dicho contenido dentro de los límites de la Aplicación. 
+Usted es legal y éticamente el único responsable de todo el contenido que comparta.
+
+### 5. Conducta prohibida
+Para mantener a PoliRed como un espacio seguro, respetuoso y académico, está estrictamente prohibido utilizar la aplicación para:
+1.  Publicar o promover contenido ofensivo, difamatorio, discriminatorio, violento o que incite al odio.
+2.  Acosar, amenazar, intimidar o realizar prácticas de *bullying* contra otros usuarios.
+3.  Enviar spam, publicidad no solicitada o contenido que no guarde relación con la vida o el contexto universitario.
+4.  Suplantar la identidad de autoridades académicas, profesores, otros estudiantes o instituciones.
+5.  Distribuir, sin autorización, material académico, imágenes o contenido protegido por derechos de autor.
+6.  Utilizar la plataforma para coordinar o promover actividades ilegales bajo las leyes ecuatorianas.
+7.  Intentar hackear, descompilar, inyectar código malicioso o explotar vulnerabilidades técnicas del sistema.
+
+### 6. Mensajes directos
+PoliRed ofrece un servicio de mensajería privada entre usuarios. Respetamos la privacidad de sus comunicaciones y no moderamos proactivamente los mensajes directos. No obstante, en caso de recibir denuncias formales por abuso, acoso o violaciones a estos términos, PoliRed se reserva el derecho de investigar y tomar medidas disciplinarias sobre las cuentas infractoras.
+
+### 7. Redes comunitarias
+Los usuarios pueden crear o unirse a "Redes" (grupos temáticos). El creador o administrador de una Red es responsable de gestionar a sus miembros y el contenido que allí se genere. PoliRed puede disolver Redes que infrinjan los lineamientos de Conducta Prohibida (Sección 5).
+
+### 8. Propiedad intelectual de PoliRed
+El diseño de la aplicación, código fuente, logotipos, interfaces, arquitectura del servidor backend (Node.js) y cualquier tecnología subyacente desarrollada para la Aplicación son propiedad exclusiva de PoliRed. No se permite copiar, modificar o distribuir nuestro software sin autorización explícita por escrito.
+
+### 9. Disponibilidad del servicio
+PoliRed se esfuerza por mantener la plataforma operativa de forma ininterrumpida, pero no garantiza una disponibilidad del 100% (24/7). El servicio puede verse temporalmente interrumpido por labores de mantenimiento, actualizaciones en los servidores de imágenes, incidencias con proveedores externos o causas de fuerza mayor.
+
+### 10. Limitación de responsabilidad
+En la máxima medida permitida por la ley ecuatoriana, PoliRed no será responsable de los daños directos, indirectos o incidentales que puedan derivarse del uso de la Aplicación. PoliRed actúa como una plataforma intermediaria y no avala, respalda ni se hace responsable por el contenido, opiniones o materiales compartidos por los usuarios en sus perfiles, redes comunitarias o chats.
+
+### 11. Suspensión y terminación
+PoliRed se reserva el derecho, a su entera discreción y sin previo aviso, de suspender o eliminar de forma permanente la cuenta de cualquier usuario que incumpla los presentes Términos y Condiciones, o cuyo comportamiento atente contra la integridad y seguridad de la comunidad universitaria.
+
+### 12. Modificaciones
+PoliRed puede revisar y actualizar estos Términos y Condiciones en cualquier momento. Notificaremos a los usuarios sobre cambios importantes a través de una alerta en la Aplicación o vía correo electrónico. El uso continuo de la Aplicación después de la entrada en vigencia de los cambios constituirá su aceptación de los nuevos términos.
+
+### 13. Ley aplicable
+Estos Términos y Condiciones se rigen e interpretan de acuerdo con las leyes de la República del Ecuador. Cualquier disputa que surja en relación con el uso de la Aplicación estará sujeta a la jurisdicción exclusiva de los tribunales competentes en el Ecuador.
+
+### 14. Contacto
+Para reportar violaciones a estos términos, resolver dudas o realizar consultas, contáctenos en:
+**Correo electrónico:** soportepolired@gmail.com`;
 
 const RegresarBoton = () => {
     const [isVisible, setIsVisible] = useState(false);
@@ -56,11 +178,70 @@ const RegresarBoton = () => {
 
 };
 
+const ModalTerminosCondiciones = ({ isOpen, onClose, content, title }) => {
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                    onClick={onClose}
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        className="bg-slate-900 border border-slate-700 rounded-lg shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="sticky top-0 z-10 flex justify-between items-center p-6 border-b border-slate-700 bg-slate-800/50 backdrop-blur">
+                            <h2 className="text-2xl font-bold text-white">{title}</h2>
+                            <button
+                                onClick={onClose}
+                                className="text-gray-400 hover:text-white transition-colors p-1"
+                                aria-label="Cerrar modal"
+                            >
+                                <IoClose size={28} />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 text-gray-300 space-y-4 prose-invert max-w-none">
+                            {content.split('\n').map((line, idx) => {
+                                if (line.startsWith('# ')) {
+                                    return <h1 key={idx} className="text-2xl font-bold text-white mt-6 mb-4">{line.replace('# ', '')}</h1>;
+                                } else if (line.startsWith('### ')) {
+                                    return <h3 key={idx} className="text-lg font-bold text-purple-400 mt-4 mb-2">{line.replace('### ', '')}</h3>;
+                                } else if (line.startsWith('**') && line.endsWith('**')) {
+                                    return <p key={idx} className="font-semibold text-white">{line.replace(/\*\*/g, '')}</p>;
+                                } else if (line.startsWith('*   ')) {
+                                    return <li key={idx} className="ml-4">{line.replace('*   ', '')}</li>;
+                                } else if (line.startsWith('1. ') || line.startsWith('2. ') || line.startsWith('3. ') || line.startsWith('4. ') || line.startsWith('5. ') || line.startsWith('6. ') || line.startsWith('7. ')) {
+                                    return <li key={idx} className="ml-4">{line.replace(/^\d\.\s/, '')}</li>;
+                                } else if (line.trim() === '') {
+                                    return <div key={idx} className="h-2" />;
+                                } else {
+                                    return <p key={idx} className="text-gray-300">{line}</p>;
+                                }
+                            })}
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+};
+
 const Home =()=>{
     // Aplicar scroll suave en toda la página
     useSmoothScroll();
     
     const [poliredPosition, setPoliredPosition] = useState({ x: 0, y: 0, opacity: 0 });
+    const [modalOpen, setModalOpen] = useState(null); // null, 'privacidad', o 'terminos'
     
     return ( 
         <>
@@ -601,68 +782,74 @@ const Home =()=>{
                     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '600px', zIndex: 0, backgroundColor: '#000000', transform: 'scaleY(-1)', overflow: 'hidden' }}>
                         <Aurora
                             colorStops={["#4a5fec","#b390d3","#e72f1f"]}
-                            blend={3.5}
-                            amplitude={1.50}
+                            blend={1.2}
+                            amplitude={4.50}
                             speed={0.5}
                         />
                     </div>
 
                     {/* Content */}
                     <div style={{ position: 'relative', zIndex: 10 }} className='px-4 sm:px-6 md:px-20 space-y-6 md:space-y-8'>
-                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 md:gap-6 px-2 md:px-4">
-                            <div className="text-left w-full lg:w-auto">
-                                <div className="text-lg sm:text-2xl md:text-3xl font-extrabold text-white">
-                                    Envíanos tus sugerencias
-                                </div>
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-4 md:gap-6">
+                            <div className='flex justify-center md:justify-start gap-4 md:gap-6'>
+                                <ul className='flex gap-3 md:gap-4'>
+                                    <li>
+                                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                                            <FaFacebook className="text-lg sm:text-xl md:text-2xl text-white hover:text-blue-400 transition-colors" />
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                                            <FaSquareInstagram className="text-lg sm:text-xl md:text-2xl text-white hover:text-pink-400 transition-colors" />
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://x.com" target="_blank" rel="noopener noreferrer">
+                                            <FaXTwitter className="text-lg sm:text-xl md:text-2xl text-white hover:text-gray-300 transition-colors" />
+                                        </a>
+                                    </li>
+                                </ul>
                             </div>
-                            <div className="w-full lg:flex-1">
-                                <form action="#" className="w-full p-2 md:p-4">
-                                    <fieldset className="border-2 border-gray-600 p-3 md:p-4 rounded-sm bg-slate-900 bg-opacity-50">
-                                        <legend className="bg-gray-700 text-white px-2 md:px-3 py-1 rounded-sm text-xs sm:text-sm">
-                                            Sugerencias / Recomendaciones
-                                        </legend>
-                                        <div className="flex flex-col sm:flex-row justify-between gap-3 md:gap-4 mt-2">
-                                            <input
-                                                type="email"
-                                                placeholder="Mensaje"
-                                                className="flex-1 border border-gray-500 rounded-md focus:outline-none px-2 md:px-3 py-1 md:py-2 text-xs md:text-sm bg-gray-800 text-white placeholder-gray-400"
-                                            />
-                                            <button className="w-full sm:w-auto sm:max-w-40 bg-gray-600 p-2 rounded-lg text-white text-xs sm:text-sm hover:bg-red-800 transition">
-                                                Enviar
-                                            </button>
-                                        </div>
-                                    </fieldset>
-                                </form>
-                            </div>
+                            <p className="text-center md:text-right text-white/70 text-xs sm:text-sm">Envíanos tus sugerencias o comunícate con nosotros al correo: <span className="text-purple-400">soportepolired@gmail.com</span></p>
                         </div>
-                    <div>
-                        <div className='flex justify-center md:justify-start gap-4 md:gap-6'>
-                            <ul className='flex gap-3 md:gap-4'>
-                                <li>
-                                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-                                        <FaFacebook className="text-lg sm:text-xl md:text-2xl text-white hover:text-blue-400 transition-colors" />
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-                                        <FaSquareInstagram className="text-lg sm:text-xl md:text-2xl text-white hover:text-pink-400 transition-colors" />
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://x.com" target="_blank" rel="noopener noreferrer">
-                                        <FaXTwitter className="text-lg sm:text-xl md:text-2xl text-white hover:text-gray-300 transition-colors" />
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <p className="text-right text-white/70 text-sm mb-2">Puedes contactarte con nosotros mediante el siguiente formulario</p>
-                    </div>
                         <hr className='border-1 border-gray-700' />
-                        <p className='text-xs sm:text-sm font-semibold text-gray-300'>
-                            EPN - ESFOT - Desarrollo de Software
-                        </p>
+                        
+                        {/* Footer Links - Términos y Condiciones / Políticas de Privacidad */}
+                        <div className='flex flex-col sm:flex-row justify-center items-center gap-4 md:gap-6'>
+                            <p className='text-xs sm:text-sm font-semibold text-gray-300'>
+                                EPN - ESFOT - Desarrollo de Software
+                            </p>
+                            <span className='text-gray-600'>|</span>
+                            <button
+                                onClick={() => setModalOpen('terminos')}
+                                className='text-xs sm:text-sm text-purple-400 hover:text-purple-300 transition-colors underline cursor-pointer'
+                            >
+                                Términos y Condiciones
+                            </button>
+                            <span className='text-gray-600'>|</span>
+                            <button
+                                onClick={() => setModalOpen('privacidad')}
+                                className='text-xs sm:text-sm text-purple-400 hover:text-purple-300 transition-colors underline cursor-pointer'
+                            >
+                                Políticas de Privacidad
+                            </button>
+                        </div>
                     </div>
                 </footer>
+
+                {/* Modales */}
+                <ModalTerminosCondiciones
+                    isOpen={modalOpen === 'terminos'}
+                    onClose={() => setModalOpen(null)}
+                    content={TERMINOS_CONDICIONES}
+                    title="Términos y Condiciones"
+                />
+                <ModalTerminosCondiciones
+                    isOpen={modalOpen === 'privacidad'}
+                    onClose={() => setModalOpen(null)}
+                    content={POLITICA_PRIVACIDAD}
+                    title="Política de Privacidad"
+                />
             <RegresarBoton />
 </motion.div>
         </>
