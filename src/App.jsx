@@ -3,7 +3,6 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Home from './pages/Home'
 import Login from './pages/Login'
-import { Register } from './pages/Register'
 import { Forgot } from './pages/Forgot'
 import { NotFound } from './pages/NotFound'
 import Dashboard from './layout/Dashboard'
@@ -15,6 +14,9 @@ import Publicaciones from './pages/Publicaciones'
 import Redes from './pages/Redes'
 import RedesAR from './pages/RedesAR'
 import Reportes from './pages/Reportes'
+import ArticulosAR from './pages/ArticulosAR'
+import ReportesSolicitudesAR from './pages/ReportesSolicitudesAR'
+import EstudiantesAR from './pages/EstudiantesAR'
 import Reset from './pages/recuperarpassword'
 import ProtectedRoute from './layout/ProtectedRoute'
 import PublicRoute from './layout/PublicRoute'
@@ -42,16 +44,9 @@ function App() {
           }
         />
 
-        <Route
-          path="register"
-          element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          }
-        />
-        <Route path="forgot/:id" element={<Forgot />} />
-        <Route path="recuperarpassword/:token" element={<Reset />} />
+
+        <Route path="forgot" element={<Forgot />} />
+        <Route path="recuperarpassword" element={<Reset />} />
 
         {/* Protegidas por rol */}
         {/* ADMINISTRADOR DE RED */}
@@ -63,12 +58,14 @@ function App() {
               <DashboardRed />
             </ProtectedRoute>
           }
-        
         >
           <Route path="perfilAR" element={<ProfileAR/>}/>
           <Route path="publicaciones" element={<Publicaciones />} />
+          <Route path="articulos" element={<ArticulosAR />} />
           <Route path="redesAR" element={<RedesAR />} />
-          </Route>
+          <Route path="reportes" element={<ReportesSolicitudesAR />} />
+          <Route path="estudiantes" element={<EstudiantesAR />} />
+        </Route>
       
         {/* SUPER ADMINISTRADOR */}
         <Route

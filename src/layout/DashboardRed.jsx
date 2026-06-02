@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlLogout } from "react-icons/sl";
-import { MdPerson, MdAutoAwesome, MdPublic, MdMenu, MdClose } from 'react-icons/md';
+import { MdPerson, MdAutoAwesome, MdPublic, MdMenu, MdClose, MdWarning, MdPeople, MdArticle } from 'react-icons/md';
 
 const DashboardRed = () => {
   const location = useLocation();
@@ -18,7 +18,7 @@ const DashboardRed = () => {
       navigate('/login', { replace: true });
       return;
     }
-    if (!user || user.rol !== 'Admin_Red') {
+    if (!user || !user.roles?.includes('admin_red')) {
       navigate('/login', { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
@@ -38,7 +38,10 @@ const DashboardRed = () => {
   const navItems = [
     { path: '/dashboardRed/perfilAR', label: 'Perfil', icon: MdPerson },
     { path: '/dashboardRed/publicaciones', label: 'Publicaciones', icon: MdAutoAwesome },
+    { path: '/dashboardRed/articulos', label: 'Artículos', icon: MdArticle },
     { path: '/dashboardRed/redesAR', label: 'Red Comunitaria', icon: MdPublic },
+    { path: '/dashboardRed/estudiantes', label: 'Estudiantes', icon: MdPeople },
+    { path: '/dashboardRed/reportes', label: 'Reportes', icon: MdWarning },
   ];
 
   const isActive = (path) => urlActual === path;

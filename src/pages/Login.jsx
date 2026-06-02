@@ -9,80 +9,40 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { FiArrowLeft } from 'react-icons/fi'
 
 const Login = () => {
-  // ⚠️ CREDENCIALES DE DESARROLLO - REMOVER CUANDO SE INTEGRE BACKEND
-  const DEV_ADMIN_RED = {
-    email: 'AR-juangarcia@epn.edu.ec',
-    password: 'AdminRed2025!'
-  }
-  // ⚠️ FIN CREDENCIALES DE DESARROLLO
-
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [showForgot, setShowForgot] = useState(false)
   const [forgotEmail, setForgotEmail] = useState('')
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm()
+  const { register, handleSubmit, formState: { errors } } = useForm()
   const { fetchDataBackend } = useFetch()
   const { login } = useContext(AuthContext)
 
-  // Cargar credenciales de desarrollo
-  const loadDevCredentials = () => {
-    setValue('email', DEV_ADMIN_RED.email)
-    setValue('password', DEV_ADMIN_RED.password)
-    toast.info('Credenciales de Admin Red cargadas (MODO DESARROLLO)')
-  }
-
   const loginUser = async (data) => {
     const email = (data.email || '').trim()
-    const password = (data.password || '').trim()
     const isAdminRedEmail = email.toUpperCase().startsWith('AR')
     
-    // ⚠️ MODO DESARROLLO - Validar credenciales hardcodeadas
-    if (isAdminRedEmail && email === DEV_ADMIN_RED.email && password === DEV_ADMIN_RED.password) {
-      const devUser = {
-        id: '507f1f77bcf86cd799439011',
-        nombre: 'Juan Carlos',
-        apellido: 'García López',
-        email: 'AR-juangarcia@epn.edu.ec',
-        rol: 'Admin_Red',
-        avatar: 'https://cdn-icons-png.flaticon.com/512/4715/4715329.png',
-        celular: '0987654321'
-      }
-      const devToken = 'dev-token-admin-red-' + Date.now()
-      login(devToken, devUser)
-      sessionStorage.setItem('token', devToken)
-      sessionStorage.setItem('user', JSON.stringify(devUser))
-      toast.success('Sesión iniciada en modo desarrollo (Admin Red)')
-      navigate('/dashboardRed/perfilAR')
-      return
-    }
-    // ⚠️ FIN MODO DESARROLLO
-
-    let url = ''
-
-    if (isAdminRedEmail) {
-      url = `${import.meta.env.VITE_BACKEND_URL}/login/admin-red`
-    } else {
-      url = `${import.meta.env.VITE_BACKEND_URL}/login`
-    }
+    // Usar el mismo endpoint para ambos roles - el backend diferencia por rol
+    const url = `${import.meta.env.VITE_BACKEND_URL}/auth/login`
 
     try {
       const response = await fetchDataBackend(url, data, 'POST')
 
       if (response?.token) {
         const user = {
-          id: response._id,
-          nombre: response.nombre,
-          apellido: response.apellido,
-          celular: response.celular,
-          email: response.email,
-          rol: response.rol,
-          avatar: response.avatar,
+          id: response?.usuario?._id,
+          nombre: response?.usuario?.nombre,
+          apellido: response?.usuario?.apellido,
+          celular: response?.usuario?.celular || '',
+          email: response?.usuario?.email,
+          roles: response?.usuario?.roles || [],
+          avatar: response?.usuario?.fotoPerfil || '',
         }
         login(response.token, user)
         sessionStorage.setItem('token', response.token)
         sessionStorage.setItem('user', JSON.stringify(user))
 
-        if (isAdminRedEmail) {
+        // Redirigir según roles
+        if (user.roles && user.roles.includes('admin_red')) {
           navigate('/dashboardRed/perfilAR')
         } else {
           navigate('/dashboard')
@@ -304,28 +264,6 @@ const Login = () => {
               "
             >
               INGRESAR
-            </button>
-
-            {/* Development Mode - Load Admin Red Credentials */}
-            <button
-              type="button"
-              onClick={loadDevCredentials}
-              className="
-                w-full
-                h-12
-                mt-3
-                rounded-xl
-                bg-orange-500
-                hover:bg-orange-600
-                text-white 
-                font-semibold 
-                text-sm
-                transition-all 
-                duration-300 
-                shadow-lg 
-              "
-            >
-              ⚙️ Cargar Credenciales Admin Red (Desarrollo)
             </button>
           </form>
 

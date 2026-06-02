@@ -68,7 +68,7 @@ const CardPasswordAR = () => {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/perfil/admin-red/actualizar/password`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

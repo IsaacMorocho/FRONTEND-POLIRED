@@ -128,10 +128,7 @@ export const CardProfile = () => {
           <span className="text-slate-400 text-sm">Apellido</span>
           <span className="text-white font-medium text-right">{perfil.apellido}</span>
         </div>
-        <div className="flex justify-between items-start">
-          <span className="text-slate-400 text-sm">Teléfono</span>
-          <span className="text-white font-medium text-right">{perfil.celular || '—'}</span>
-        </div>
+
         <div className="flex justify-between items-start">
           <span className="text-slate-400 text-sm">Email</span>
           <span className="text-white font-medium text-right text-sm break-all">{perfil.email}</span>
