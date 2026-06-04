@@ -13,6 +13,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showForgot, setShowForgot] = useState(false)
   const [forgotEmail, setForgotEmail] = useState('')
+  const [recoveryLoading, setRecoveryLoading] = useState(false)
+  const [recoveryEmailSent, setRecoveryEmailSent] = useState(false)
   const { register, handleSubmit, formState: { errors } } = useForm()
   const { fetchDataBackend } = useFetch()
   const { login } = useContext(AuthContext)
@@ -53,14 +55,35 @@ const Login = () => {
     }
   }
 
-  const handleSendRecoveryEmail = () => {
-    if (!forgotEmail.trim()) {
-      toast.error('Por favor ingresa un correo electrónico')
+  const closeForgotOverlay = () => {
+    setShowForgot(false)
+    setForgotEmail('')
+    setRecoveryEmailSent(false)
+    setRecoveryLoading(false)
+  }
+
+  const handleSendRecoveryEmail = async () => {
+    const emailTrimmed = forgotEmail.trim()
+
+    if (!emailTrimmed) {
+      toast.error('Por favor ingresa tu email')
       return
     }
-    // Aquí iría el consumo del endpoint
-    // Por ahora solo mostramos un toast
-    toast.info('Funcionalidad de recuperación en desarrollo...')
+
+    setRecoveryLoading(true)
+    try {
+      await fetchDataBackend(
+        `${import.meta.env.VITE_BACKEND_URL}/recuperar-password`,
+        { email: emailTrimmed },
+        'POST'
+      )
+      toast.success('Revisa tu correo. Se ha enviado un enlace de recuperación.')
+      setRecoveryEmailSent(true)
+    } catch (error) {
+      toast.error(error.message || 'Error al solicitar recuperación')
+    } finally {
+      setRecoveryLoading(false)
+    }
   }
 
   return (
@@ -326,82 +349,94 @@ const Login = () => {
                 </h1>
 
                 <p className="text-white/90 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
-                  Ingresa el correo electrónico asociado a tu cuenta para recuperar tu contraseña
+                  Ingresa el correo electrónico asociado y se enviara un enlace de recuperación a tu cuenta para recuperar tu contraseña
                 </p>
               </div>
 
-              {/* Recovery Form */}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  handleSendRecoveryEmail()
-                }}
-                className="w-full flex flex-col gap-6"
-              >
-                {/* Email Field */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-white">
-                    Correo electrónico
-                  </label>
-
-                  <input
-                    type="email"
-                    placeholder="ejemplo@correo.com"
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    className="
-                      w-full 
-                      h-14
-                      px-4 
-                      rounded-xl 
-                      border 
-                      border-white/30
-                      bg-white/10
-                      backdrop-blur-sm
-                      text-white 
-                      placeholder-white/50
-                      focus:outline-none 
-                      focus:ring-2 
-                      focus:ring-white/50
-                      focus:border-transparent 
-                      transition
-                    "
-                    required
-                  />
+              {recoveryEmailSent ? (
+                <div className="w-full flex flex-col gap-4 text-center">
+                  <p className="text-white/90 text-sm sm:text-base leading-relaxed">
+                    Hemos enviado un enlace de recuperación a{' '}
+                    <span className="font-semibold text-white">{forgotEmail.trim()}</span>.
+                    Revisa tu bandeja de entrada y la carpeta de spam.
+                  </p>
                 </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  className="
-                    w-full
-                    h-14
-                    mt-2
-                    rounded-xl
-                    bg-white
-                    text-purple-600
-                    font-semibold 
-                    text-base
-                    transition-all 
-                    duration-300 
-                    shadow-lg 
-                    hover:shadow-2xl 
-                    hover:scale-[1.02]
-                  "
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    handleSendRecoveryEmail()
+                  }}
+                  className="w-full flex flex-col gap-6"
                 >
-                  Enviar Confirmación
-                </button>
-              </form>
+                  {/* Email Field */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-white">
+                      Correo electrónico
+                    </label>
+
+                    <input
+                      type="email"
+                      placeholder="ejemplo@correo.com"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      disabled={recoveryLoading}
+                      className="
+                        w-full 
+                        h-14
+                        px-4 
+                        rounded-xl 
+                        border 
+                        border-white/30
+                        bg-white/10
+                        backdrop-blur-sm
+                        text-white 
+                        placeholder-white/50
+                        focus:outline-none 
+                        focus:ring-2 
+                        focus:ring-white/50
+                        focus:border-transparent 
+                        transition
+                        disabled:opacity-50
+                      "
+                      required
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={recoveryLoading || !forgotEmail.trim()}
+                    className="
+                      w-full
+                      h-14
+                      mt-2
+                      rounded-xl
+                      bg-white
+                      text-purple-600
+                      font-semibold 
+                      text-base
+                      transition-all 
+                      duration-300 
+                      shadow-lg 
+                      hover:shadow-2xl 
+                      hover:scale-[1.02]
+                      disabled:opacity-50
+                      disabled:cursor-not-allowed
+                      disabled:hover:scale-100
+                    "
+                  >
+                    {recoveryLoading ? 'Enviando...' : 'Enviar Confirmación'}
+                  </button>
+                </form>
+              )}
 
               {/* Footer */}
               <div className="mt-10" />
                             <div className="flex items-center justify-between mb-10">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowForgot(false)
-                    setForgotEmail('')
-                  }}
+                  onClick={closeForgotOverlay}
                   className="
                     flex
                     items-center
