@@ -8,8 +8,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { FiArrowLeft } from 'react-icons/fi'
 
+const LOGIN_ROLES = {
+  SUPERADMIN: 'superadmin',
+  ADMIN_RED: 'admin_red',
+}
+
 const Login = () => {
   const navigate = useNavigate()
+  const [loginRole, setLoginRole] = useState(LOGIN_ROLES.SUPERADMIN)
   const [showPassword, setShowPassword] = useState(false)
   const [showForgot, setShowForgot] = useState(false)
   const [forgotEmail, setForgotEmail] = useState('')
@@ -21,35 +27,70 @@ const Login = () => {
 
   const loginUser = async (data) => {
     const email = (data.email || '').trim()
-    const isAdminRedEmail = email.toUpperCase().startsWith('AR')
-    
-    // Usar el mismo endpoint para ambos roles - el backend diferencia por rol
-    const url = `${import.meta.env.VITE_BACKEND_URL}/auth/login`
+    const password = data.password
+    const isSuperAdmin = loginRole === LOGIN_ROLES.SUPERADMIN
+
+    const url = isSuperAdmin
+      ? `${import.meta.env.VITE_BACKEND_URL}/login`
+      : `${import.meta.env.VITE_BACKEND_URL}/auth/login`
+
+    const payload = isSuperAdmin
+      ? { email, password }
+      : { email, password, context: 'admin_panel' }
 
     try {
-      const response = await fetchDataBackend(url, data, 'POST')
+      const response = await fetchDataBackend(url, payload, 'POST')
 
-      if (response?.token) {
-        const user = {
-          id: response?.usuario?._id,
-          nombre: response?.usuario?.nombre,
-          apellido: response?.usuario?.apellido,
-          celular: response?.usuario?.celular || '',
-          email: response?.usuario?.email,
-          roles: response?.usuario?.roles || [],
-          avatar: response?.usuario?.fotoPerfil || '',
+      if (!response?.token) {
+        toast.error('Credenciales inválidas o error al iniciar sesión')
+        return
+      }
+
+      if (isSuperAdmin) {
+        const rol = (response.rol || '').toLowerCase()
+        if (rol !== LOGIN_ROLES.SUPERADMIN) {
+          toast.error('Este usuario no tiene permisos de SuperAdmin')
+          return
         }
+
+        const user = {
+          id: response._id,
+          nombre: response.nombre,
+          apellido: response.apellido,
+          celular: '',
+          email: response.email,
+          rol: response.rol,
+          roles: [LOGIN_ROLES.SUPERADMIN],
+          avatar: '',
+        }
+
         login(response.token, user)
         sessionStorage.setItem('token', response.token)
         sessionStorage.setItem('user', JSON.stringify(user))
-
-        // Redirigir según roles
-        if (user.roles && user.roles.includes('admin_red')) {
-          navigate('/dashboardRed/perfilAR')
-        } else {
-          navigate('/dashboard')
-        }
+        navigate('/dashboard')
+        return
       }
+
+      const roles = response?.usuario?.roles || []
+      if (!roles.includes(LOGIN_ROLES.ADMIN_RED)) {
+        toast.error('Este usuario no tiene permisos de Administrador de Red')
+        return
+      }
+
+      const user = {
+        id: response?.usuario?._id,
+        nombre: response?.usuario?.nombre,
+        apellido: response?.usuario?.apellido,
+        celular: response?.usuario?.celular || '',
+        email: response?.usuario?.email,
+        roles,
+        avatar: response?.usuario?.fotoPerfil || '',
+      }
+
+      login(response.token, user)
+      sessionStorage.setItem('token', response.token)
+      sessionStorage.setItem('user', JSON.stringify(user))
+      navigate('/dashboardRed/perfilAR')
     } catch (err) {
       toast.error('Credenciales inválidas o error al iniciar sesión')
     }
@@ -153,6 +194,53 @@ const Login = () => {
             onSubmit={handleSubmit(loginUser)}
             className="w-full flex flex-col gap-6"
           >
+            {/* Role Selector */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-slate-700">
+                Tipo de acceso
+              </label>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setLoginRole(LOGIN_ROLES.SUPERADMIN)}
+                  className={`
+                    h-12
+                    rounded-xl
+                    border
+                    font-semibold
+                    text-sm
+                    transition
+                    ${loginRole === LOGIN_ROLES.SUPERADMIN
+                      ? 'border-purple-500 bg-purple-50 text-purple-700 ring-2 ring-purple-500'
+                      : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400'
+                    }
+                  `}
+                >
+                  SuperAdmin
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setLoginRole(LOGIN_ROLES.ADMIN_RED)}
+                  className={`
+                    h-12
+                    rounded-xl
+                    border
+                    font-semibold
+                    text-sm
+                    transition
+                    ${loginRole === LOGIN_ROLES.ADMIN_RED
+                      ? 'border-purple-500 bg-purple-50 text-purple-700 ring-2 ring-purple-500'
+                      : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400'
+                    }
+                  `}
+                >
+                  Admin de Red
+                </button>
+              </div>
+            </div>
+
             {/* Email Field */}
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-slate-700">
