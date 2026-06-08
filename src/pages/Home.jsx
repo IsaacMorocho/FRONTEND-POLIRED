@@ -168,7 +168,7 @@ const RegresarBoton = () => {
     isVisible && (
         <button
             onClick={scrollToTop}
-            className="fixed bottom-4.5 left-4 z-50 bg-gray-700 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition"
+            className="fixed bottom-4 right-4 sm:bottom-6 sm:left-6 sm:right-auto z-50 bg-gray-700 text-white p-2.5 sm:p-3 rounded-full shadow-lg hover:bg-red-700 transition"
             aria-label="Volver arriba"
             >
         <FaArrowUp className="w-5 h-5" />
@@ -186,7 +186,7 @@ const ModalTerminosCondiciones = ({ isOpen, onClose, content, title }) => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-2 sm:p-4 bg-black/50 backdrop-blur-sm"
                     onClick={onClose}
                 >
                     <motion.div
@@ -194,12 +194,12 @@ const ModalTerminosCondiciones = ({ isOpen, onClose, content, title }) => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
-                        className="bg-slate-900 border border-slate-700 rounded-lg shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto"
+                        className="bg-slate-900 border border-slate-700 rounded-t-2xl sm:rounded-lg shadow-2xl w-full max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="sticky top-0 z-10 flex justify-between items-center p-6 border-b border-slate-700 bg-slate-800/50 backdrop-blur">
-                            <h2 className="text-2xl font-bold text-white">{title}</h2>
+                        <div className="sticky top-0 z-10 flex justify-between items-center p-4 sm:p-6 border-b border-slate-700 bg-slate-800/50 backdrop-blur gap-3">
+                            <h2 className="text-lg sm:text-2xl font-bold text-white">{title}</h2>
                             <button
                                 onClick={onClose}
                                 className="text-gray-400 hover:text-white transition-colors p-1"
@@ -210,7 +210,7 @@ const ModalTerminosCondiciones = ({ isOpen, onClose, content, title }) => {
                         </div>
 
                         {/* Content */}
-                        <div className="p-6 text-gray-300 space-y-4 prose-invert max-w-none">
+                        <div className="p-4 sm:p-6 text-gray-300 space-y-3 sm:space-y-4 prose-invert max-w-none text-sm sm:text-base">
                             {content.split('\n').map((line, idx) => {
                                 if (line.startsWith('# ')) {
                                     return <h1 key={idx} className="text-2xl font-bold text-white mt-6 mb-4">{line.replace('# ', '')}</h1>;
@@ -254,7 +254,7 @@ const Home =()=>{
                 
                 <div className="relative w-full bg-black min-h-screen overflow-x-hidden">
                     {/* Aurora Background - Responsive */}
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '1500px', minHeight: '1200px', zIndex: 0, backgroundColor: '#000000', overflow: 'hidden' }}>
+                    <div className="absolute top-0 left-0 w-full min-h-[100vh] h-[120vh] sm:h-[130vh] md:h-[140vh] lg:h-[1500px] z-0 bg-black overflow-hidden">
                         <Aurora
                             colorStops={["#4a5fec","#b390d3","#e72f1f"]}
                             blend={2.5}
@@ -280,7 +280,7 @@ const Home =()=>{
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true, amount: 0.3 }}
                                     transition={{ duration: 0.6, ease: 'easeOut' }}
-                                    className='relative overflow-hidden rounded-3xl bg-slate-800 shadow-xl p-8 md:p-12'
+                                    className='relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-800 shadow-xl p-5 sm:p-8 md:p-12'
                                 >
                                     {/* Animated Shine Border */}
                                     <div className='absolute inset-0 rounded-3xl p-[2px] z-0 pointer-events-none'>
@@ -316,12 +316,12 @@ const Home =()=>{
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
-                                                className='relative flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
+                                                className='relative flex flex-col items-start gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
                                             >
-                                                <FaCommentDots className='absolute bottom-0 right-0 w-32 h-32 text-purple-600 opacity-15 -mb-8 -mr-8' />
+                                                <FaCommentDots className='absolute bottom-0 right-0 w-20 h-20 sm:w-32 sm:h-32 text-purple-600 opacity-15 -mb-6 -mr-6 sm:-mb-8 sm:-mr-8' />
                                                 <div className='relative z-10'>
-                                                    <h3 className='text-white font-bold text-xl'>Chats en tiempo real</h3>
-                                                    <p className='text-gray-300 text-base mt-2'>Comunicate con tus compañeros al instante.</p>
+                                                    <h3 className='text-white font-bold text-lg sm:text-xl'>Chats en tiempo real</h3>
+                                                    <p className='text-gray-300 text-sm sm:text-base mt-2'>Comunicate con tus compañeros al instante.</p>
                                                 </div>
                                             </motion.div>
 
@@ -331,12 +331,12 @@ const Home =()=>{
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-                                                className='relative flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
+                                                className='relative flex flex-col items-start gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
                                             >
-                                                <FaBook className='absolute bottom-0 right-0 w-32 h-32 text-purple-600 opacity-15 -mb-8 -mr-8' />
+                                                <FaBook className='absolute bottom-0 right-0 w-20 h-20 sm:w-32 sm:h-32 text-purple-600 opacity-15 -mb-6 -mr-6 sm:-mb-8 sm:-mr-8' />
                                                 <div className='relative z-10'>
-                                                    <h3 className='text-white font-bold text-xl'>Comparte recursos</h3>
-                                                    <p className='text-gray-300 text-base mt-2'>Publica y encuentra apuntes, guías y más.</p>
+                                                    <h3 className='text-white font-bold text-lg sm:text-xl'>Comparte recursos</h3>
+                                                    <p className='text-gray-300 text-sm sm:text-base mt-2'>Publica y encuentra apuntes, guías y más.</p>
                                                 </div>
                                             </motion.div>
 
@@ -346,12 +346,12 @@ const Home =()=>{
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.3 }}
-                                                className='relative flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
+                                                className='relative flex flex-col items-start gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
                                             >
-                                                <FaUsers className='absolute bottom-0 right-0 w-32 h-32 text-purple-600 opacity-15 -mb-8 -mr-8' />
+                                                <FaUsers className='absolute bottom-0 right-0 w-20 h-20 sm:w-32 sm:h-32 text-purple-600 opacity-15 -mb-6 -mr-6 sm:-mb-8 sm:-mr-8' />
                                                 <div className='relative z-10'>
-                                                    <h3 className='text-white font-bold text-xl'>Red universitaria</h3>
-                                                    <p className='text-gray-300 text-base mt-2'>Conéctate con estudiantes de toda la EPN.</p>
+                                                    <h3 className='text-white font-bold text-lg sm:text-xl'>Red universitaria</h3>
+                                                    <p className='text-gray-300 text-sm sm:text-base mt-2'>Conéctate con estudiantes de toda la EPN.</p>
                                                 </div>
                                             </motion.div>
 
@@ -361,12 +361,12 @@ const Home =()=>{
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.4 }}
-                                                className='relative flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
+                                                className='relative flex flex-col items-start gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
                                             >
-                                                <FaHandshake className='absolute bottom-0 right-0 w-32 h-32 text-purple-600 opacity-15 -mb-8 -mr-8' />
+                                                <FaHandshake className='absolute bottom-0 right-0 w-20 h-20 sm:w-32 sm:h-32 text-purple-600 opacity-15 -mb-6 -mr-6 sm:-mb-8 sm:-mr-8' />
                                                 <div className='relative z-10'>
-                                                    <h3 className='text-white font-bold text-xl'>Construye tu comunidad</h3>
-                                                    <p className='text-gray-300 text-base mt-2'>Crea grupos y espacios para estudiantes con intereses similares.</p>
+                                                    <h3 className='text-white font-bold text-lg sm:text-xl'>Construye tu comunidad</h3>
+                                                    <p className='text-gray-300 text-sm sm:text-base mt-2'>Crea grupos y espacios para estudiantes con intereses similares.</p>
                                                 </div>
                                             </motion.div>
 
@@ -376,12 +376,12 @@ const Home =()=>{
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.5 }}
-                                                className='relative flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
+                                                className='relative flex flex-col items-start gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
                                             >
-                                                <FaStore className='absolute bottom-0 right-0 w-32 h-32 text-purple-600 opacity-15 -mb-8 -mr-8' />
+                                                <FaStore className='absolute bottom-0 right-0 w-20 h-20 sm:w-32 sm:h-32 text-purple-600 opacity-15 -mb-6 -mr-6 sm:-mb-8 sm:-mr-8' />
                                                 <div className='relative z-10'>
-                                                    <h3 className='text-white font-bold text-xl'>Compra y venta de libros</h3>
-                                                    <p className='text-gray-300 text-base mt-2'>Intercambia libros y materiales académicos con otros estudiantes.</p>
+                                                    <h3 className='text-white font-bold text-lg sm:text-xl'>Compra y venta de libros</h3>
+                                                    <p className='text-gray-300 text-sm sm:text-base mt-2'>Intercambia libros y materiales académicos con otros estudiantes.</p>
                                                 </div>
                                             </motion.div>
 
@@ -391,12 +391,12 @@ const Home =()=>{
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 viewport={{ once: true, amount: 0.3 }}
                                                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.6 }}
-                                                className='relative flex flex-col items-start gap-4 p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
+                                                className='relative flex flex-col items-start gap-3 sm:gap-4 p-4 sm:p-6 rounded-xl border border-purple-500/30 hover:border-purple-400/60 transition-colors overflow-hidden'
                                             >
-                                                <FaGraduationCap className='absolute bottom-0 right-0 w-32 h-32 text-purple-600 opacity-15 -mb-8 -mr-8' />
+                                                <FaGraduationCap className='absolute bottom-0 right-0 w-20 h-20 sm:w-32 sm:h-32 text-purple-600 opacity-15 -mb-6 -mr-6 sm:-mb-8 sm:-mr-8' />
                                                 <div className='relative z-10'>
-                                                    <h3 className='text-white font-bold text-xl'>Artefactos universitarios</h3>
-                                                    <p className='text-gray-300 text-base mt-2'>Vende y compra artículos, equipos y recursos estudiantiles.</p>
+                                                    <h3 className='text-white font-bold text-lg sm:text-xl'>Artefactos universitarios</h3>
+                                                    <p className='text-gray-300 text-sm sm:text-base mt-2'>Vende y compra artículos, equipos y recursos estudiantiles.</p>
                                                 </div>
                                             </motion.div>
                                         </div>
@@ -436,12 +436,12 @@ const Home =()=>{
                                 />
                             </div>
                         </section>
-                        <section id='comentarios' className='w-full py-10 md:py-28 px-4'>
-                                <div className='w-full px-4 md:px-10'>
-                                    <div className='flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8'>
+                        <section id='comentarios' className='w-full py-10 md:py-20 lg:py-28 px-4 overflow-hidden'>
+                                <div className='w-full max-w-7xl mx-auto px-2 sm:px-4 md:px-10'>
+                                    <div className='flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-10 lg:gap-8'>
                                     {/* Left side - Statistics */}
-                                    <div className='flex-1'>
-                                        <h3 className='text-white text-5xl sm:text-6xl md:text-7xl font-bold mb-4'>
+                                    <div className='flex-1 w-full text-center lg:text-left'>
+                                        <h3 className='text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-3 sm:mb-4'>
                                             +<CountUp
                                                 from={0}
                                                 to={400}
@@ -451,11 +451,11 @@ const Home =()=>{
                                                 className="text-purple-500"
                                             />
                                         </h3>
-                                        <p className='text-gray-300 text-lg md:text-xl'>Estudiantes activos en la app.</p>
+                                        <p className='text-gray-300 text-base sm:text-lg md:text-xl'>Estudiantes activos en la app.</p>
                                     </div>
 
                                     {/* Right side - Comments Loop */}
-                                    <div className='flex-1 w-full'>
+                                    <div className='flex-1 w-full min-w-0'>
                                         <CommentsLoop
                                         comments={[
                                             {
@@ -491,12 +491,13 @@ const Home =()=>{
                                 </div>
                             </div>
                         </section>
-                        <section id="servicios" className='w-full bg-black py-16 px-4'>
+                        <section id="servicios" className='w-full bg-black py-10 sm:py-14 md:py-16 px-4 overflow-hidden'>
                             <style>{`
                                 .card {
                                   position: relative;
-                                  width: 350px;
-                                  height: 280px;
+                                  width: 100%;
+                                  max-width: 350px;
+                                  height: clamp(220px, 55vw, 280px);
                                   background-color: #200f46ef;
                                   border-radius: 16px;
                                   display: flex;
@@ -521,12 +522,25 @@ const Home =()=>{
                                   top: 50%;
                                   left: 50%;
                                   transform: translate(-50%, -50%);
-                                  width: 450px;
-                                  height: 440px;
+                                  width: min(75vw, 450px);
+                                  height: auto;
+                                  max-height: min(70vw, 440px);
                                   object-fit: contain;
-                                  opacity: 0.8;
+                                  opacity: 0.35;
                                   z-index: 10;
                                   pointer-events: none;
+                                }
+
+                                @media (min-width: 768px) {
+                                  .grid-center-logo {
+                                    opacity: 0.55;
+                                  }
+                                }
+
+                                @media (min-width: 1024px) {
+                                  .grid-center-logo {
+                                    opacity: 0.8;
+                                  }
                                 }
                                 .card svg {
                                   width: 50px;
@@ -541,43 +555,59 @@ const Home =()=>{
                                   transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                                 }   
 
-                                .card:hover {
-                                  transform: scale(1.05);
-                                  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
-                                }
-
                                 .card__content {
                                   position: absolute;
                                   top: 0;
                                   left: 0;
                                   width: 100%;
                                   height: 100%;
-                                  padding: 20px;
+                                  padding: 16px;
                                   box-sizing: border-box;
                                   background-color: #f2f2f2;
                                   transform: rotateX(-90deg);
                                   transform-origin: bottom;
                                   transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                                  overflow-y: auto;
                                 }
 
-                                .card:hover .card__content {
-                                  transform: rotateX(0deg);
+                                @media (min-width: 640px) {
+                                  .card__content {
+                                    padding: 20px;
+                                  }
+                                }
+
+                                @media (hover: hover) {
+                                  .card:hover .card__content {
+                                    transform: rotateX(0deg);
+                                  }
+
+                                  .card:hover img {
+                                    scale: 0;
+                                  }
+
+                                  .card:hover {
+                                    transform: scale(1.05);
+                                    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+                                  }
+                                }
+
+                                @media (hover: none) {
+                                  .card:active .card__content,
+                                  .card:focus-within .card__content {
+                                    transform: rotateX(0deg);
+                                  }
                                 }
 
                                 .card__title {
                                   margin: 0;
-                                  font-size: 28px;
+                                  font-size: clamp(1.25rem, 4vw, 1.75rem);
                                   color: #333;
                                   font-weight: 700;
                                 }
 
-                                .card:hover img {
-                                  scale: 0;
-                                }
-
                                 .card__description {
                                   margin: 10px 0 0;
-                                  font-size: 16px;
+                                  font-size: clamp(0.875rem, 2.5vw, 1rem);
                                   color: #777;
                                   line-height: 1.4;
                                 }
@@ -588,15 +618,15 @@ const Home =()=>{
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true, amount: 0.3 }}
                                     transition={{ duration: 0.6, ease: 'easeOut' }}
-                                    className='mb-16 text-center'
+                                    className='mb-8 sm:mb-12 md:mb-16 text-center px-2'
                                 >
-                                    <h2 className='font-semibold text-white text-2xl sm:text-3xl md:text-4xl'>Nuestras Redes Comunitarias</h2>
-                                    <p className='text-gray-400 text-base md:text-lg mt-4'>Descubre las comunidades académicas disponibles y únete a la que te interese</p>
+                                    <h2 className='font-semibold text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl'>Nuestras Redes Comunitarias</h2>
+                                    <p className='text-gray-400 text-sm sm:text-base md:text-lg mt-3 sm:mt-4 max-w-2xl mx-auto'>Descubre las comunidades académicas disponibles y únete a la que te interese</p>
                                 </motion.div>
                                 
                                 {/* Grid de 2x2 con tarjetas tipo card */}
-                                <div className='w-full px-4 md:px-8 lg:px-20 py-12'>
-                                    <div className='relative grid grid-cols-1 md:grid-cols-2 gap-8 justify-center'>
+                                <div className='w-full max-w-5xl mx-auto px-2 sm:px-4 md:px-8 lg:px-12 py-6 sm:py-10 md:py-12'>
+                                    <div className='relative grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 md:gap-8 justify-items-center'>
                                         {/* Logo centrado */}
                                         <img className='grid-center-logo' src="/images/logo_facus.png" alt="Logo" />
                                         {/* Red FIQA */}
@@ -605,9 +635,9 @@ const Home =()=>{
                                             whileInView={{ opacity: 1, y: 0 }}
                                             viewport={{ once: true, amount: 0.3 }}
                                             transition={{ duration: 0.6, ease: 'easeOut' }}
-                                            className='flex justify-center'
+                                            className='flex justify-center w-full'
                                         >
-                                            <div className='card'>
+                                            <div className='card w-full'>
                                                 <img src="/images/facus/fiqa.png" alt="FIQA" />
                                                 <div className='card__content'>
                                                     <p className='card__title text-center'>Red FIQA</p>
@@ -626,9 +656,9 @@ const Home =()=>{
                                             whileInView={{ opacity: 1, y: 0 }}
                                             viewport={{ once: true, amount: 0.3 }}
                                             transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
-                                            className='flex justify-center'
+                                            className='flex justify-center w-full'
                                         >
-                                            <div className='card'>
+                                            <div className='card w-full'>
                                                 <img src="/images/facus/fim.png" alt="FIM" />
                                                 <div className='card__content'>
                                                     <p className='card__title text-center'>Red FIM</p>
@@ -647,9 +677,9 @@ const Home =()=>{
                                             whileInView={{ opacity: 1, y: 0 }}
                                             viewport={{ once: true, amount: 0.3 }}
                                             transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
-                                            className='flex justify-center'
+                                            className='flex justify-center w-full'
                                         >
-                                            <div className='card'>
+                                            <div className='card w-full'>
                                                 <img src="/images/facus/fiee.jpg" alt="FIEE" />
                                                 <div className='card__content'>
                                                     <p className='card__title text-center'>Red FIEE</p>
@@ -668,9 +698,9 @@ const Home =()=>{
                                             whileInView={{ opacity: 1, y: 0 }}
                                             viewport={{ once: true, amount: 0.3 }}
                                             transition={{ duration: 0.6, ease: 'easeOut', delay: 0.3 }}
-                                            className='flex justify-center'
+                                            className='flex justify-center w-full'
                                         >
-                                            <div className='card'>
+                                            <div className='card w-full'>
                                                 <img src="/images/facus/esfot.jpg" alt="ESFOT" />
                                                 <div className='card__content'>
                                                     <p className='card__title text-center'>Red ESFOT</p>
@@ -687,19 +717,19 @@ const Home =()=>{
                             </div>
                         </section>
                         {/* CONTROL DE ESPACIADO ENTRE SECCIONES: Cambiar py-12 md:py-20 */}
-                        <section id="about" className='w-full py-20 md:py-32 px-4 bg-black'>
-                            <div className='container mx-auto bg-slate-900 rounded-3xl p-8 md:p-12 lg:p-16'>
-                                <div className='flex flex-col lg:flex-row gap-12 md:gap-16 items-start'>
+                        <section id="about" className='w-full py-12 sm:py-16 md:py-24 lg:py-32 px-4 bg-black'>
+                            <div className='container mx-auto bg-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-12 lg:p-16'>
+                                <div className='flex flex-col lg:flex-row gap-8 sm:gap-12 md:gap-16 items-start'>
                                     {/* Título e imagen lado izquierdo */}
                                     <motion.div 
                                         initial={{ opacity: 0, x: -50 }}
                                         whileInView={{ opacity: 1, x: 0 }}
                                         viewport={{ once: true, amount: 0.3 }}
                                         transition={{ duration: 0.6, ease: 'easeOut' }}
-                                        className='w-full lg:w-1/2 flex flex-col gap-8'
+                                        className='w-full lg:w-1/2 flex flex-col gap-6 sm:gap-8 text-center lg:text-left'
                                     >
                                         <div>
-                                            <h2 className='font-bold text-white text-5xl sm:text-6xl md:text-7xl leading-tight mb-6'>
+                                            <h2 className='font-bold text-white text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight mb-4 sm:mb-6'>
                                                 ¿QUIÉNES
                                                 <br />
                                                 <span className='text-purple-500'>SOMOS?</span>
@@ -711,7 +741,7 @@ const Home =()=>{
                                             viewport={{ once: true, amount: 0.3 }}
                                             transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
                                         >
-                                            <img src="/images/logo_actual.png" alt="Logo PoliRED" className='w-10 sm:w-40 md:w-52 h-auto object-contain' />
+                                            <img src="/images/logo_actual.png" alt="Logo PoliRED" className='w-28 sm:w-40 md:w-52 h-auto object-contain mx-auto lg:mx-0' />
                                         </motion.div>
                                     </motion.div>
 
@@ -743,21 +773,21 @@ const Home =()=>{
                         </section>
 
                         {/* RotatingText Component */}
-                        <section className='w-full py-16 md:py-24 px-4 bg-black'>
+                        <section className='w-full py-12 sm:py-16 md:py-24 px-4 bg-black overflow-hidden'>
                             <div className='container mx-auto flex justify-center items-center'>
                                 <motion.div
                                     initial={{ opacity: 0, y: 30 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true, amount: 0.3 }}
                                     transition={{ duration: 0.6, ease: 'easeOut' }}
-                                    className='text-center flex flex-wrap justify-center items-center gap-3 md:gap-4'
+                                    className='text-center flex flex-col sm:flex-row flex-wrap justify-center items-center gap-2 sm:gap-3 md:gap-4 max-w-full'
                                 >
-                                    <h3 className='text-4xl sm:text-5xl md:text-6xl font-bold text-white'>
+                                    <h3 className='text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white'>
                                         Conectamos
                                     </h3>
                                     <RotatingText
                                         texts={['estudiantes', 'ideas', 'comunidades', 'conocimientos','carreras']}
-                                        mainClassName="px-3 sm:px-4 md:px-6 bg-slate-900 text-white overflow-hidden py-1 sm:py-2 md:py-3 justify-center rounded-lg inline-block text-4xl sm:text-5xl md:text-6xl font-bold"
+                                        mainClassName="px-2 sm:px-4 md:px-6 bg-slate-900 text-white overflow-hidden py-1 sm:py-2 md:py-3 justify-center rounded-lg inline-block text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold max-w-full"
                                         staggerFrom="first"
                                         initial={{ y: "100%" }}
                                         animate={{ y: 0 }}
@@ -779,7 +809,7 @@ const Home =()=>{
 
                 <footer className='relative w-full bg-black py-12 sm:py-16 md:py-20 text-center overflow-hidden'>
                     {/* Aurora Background - Invertido */}
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '600px', zIndex: 0, backgroundColor: '#000000', transform: 'scaleY(-1)', overflow: 'hidden' }}>
+                    <div className="absolute top-0 left-0 w-full h-[400px] sm:h-[500px] md:h-[600px] z-0 bg-black scale-y-[-1] overflow-hidden">
                         <Aurora
                             colorStops={["#4a5fec","#b390d3","#e72f1f"]}
                             blend={1.2}
@@ -810,7 +840,7 @@ const Home =()=>{
                                     </li>
                                 </ul>
                             </div>
-                            <p className="text-center md:text-right text-white/70 text-xs sm:text-sm">Envíanos tus sugerencias o comunícate con nosotros al correo: <span className="text-purple-400">soportepolired@gmail.com</span></p>
+                            <p className="text-center md:text-right text-white/70 text-xs sm:text-sm max-w-xl">Envíanos tus sugerencias o comunícate con nosotros al correo: <span className="text-purple-400 break-all sm:break-normal">soportepolired@gmail.com</span></p>
                         </div>
                         <hr className='border-1 border-gray-700' />
                         

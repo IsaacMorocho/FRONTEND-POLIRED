@@ -72,17 +72,17 @@ const CommentsLoop = ({
   const cursorStyle = interactive ? (dragRef.current ? 'grabbing' : 'grab') : 'auto';
 
   return (
-    <div className="relative w-full overflow-hidden" style={{ cursor: cursorStyle }}>
+    <div className="relative w-full max-w-full overflow-hidden" style={{ cursor: cursorStyle }}>
       {/* Fade izquierda */}
-      <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-slate-950 to-transparent z-10 pointer-events-none" />
+      <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-16 md:w-24 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
       
       {/* Fade derecha */}
-      <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-slate-950 to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-16 md:w-24 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
 
       {/* Contenedor de comentarios */}
       <div
         ref={containerRef}
-        className="flex gap-4 py-6 px-4"
+        className="flex gap-3 sm:gap-4 py-4 sm:py-6 px-2 sm:px-4"
         style={{
           transform: `translateX(${offset}px)`,
           transition: dragRef.current ? 'none' : 'transform 0.05s linear'
@@ -95,7 +95,7 @@ const CommentsLoop = ({
         {[...comments, ...comments, ...comments].map((comment, idx) => (
         <div
             key={idx}
-            className="flex-shrink-0 w-[250px] md:w-[320px] bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4 shadow-lg hover:scale-[1.02] transition-all duration-300"
+            className="flex-shrink-0 w-[min(85vw,250px)] sm:w-[280px] md:w-[320px] bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-3 sm:p-4 shadow-lg hover:scale-[1.02] transition-all duration-300"
         >
             {/* Header */}
             <div className="flex items-center gap-3 mb-3">

@@ -1,9 +1,19 @@
 import { Link } from 'react-router-dom';
-import { motion, useTransform } from 'framer-motion';
+import { motion, useTransform, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { HiMenu, HiX } from 'react-icons/hi';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 const HeaderDynamic = ({ poliredPosition = { x: 0, y: 0, opacity: 0 } }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { scrollY, isScrolled } = useScrollAnimation(100);
+
+  const navLinks = [
+    { href: '#about', label: 'Sobre nosotros' },
+    { href: '#servicios', label: 'Servicios' },
+  ];
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   // Animaciones suaves basadas en scrollY (no en estado boolean)
   const headerBlurValue = useTransform(scrollY, [0, 100], [0, 8]);
@@ -39,7 +49,7 @@ const HeaderDynamic = ({ poliredPosition = { x: 0, y: 0, opacity: 0 } }) => {
           >
             {/* Header items container */}
             <motion.div
-              className="flex flex-col sm:flex-row justify-between items-center gap-4"
+              className="flex flex-row justify-between items-center gap-2 sm:gap-4"
               style={{
                 borderRadius: borderRadiusValue,
                 marginTop: marginTopValue,
@@ -69,37 +79,69 @@ const HeaderDynamic = ({ poliredPosition = { x: 0, y: 0, opacity: 0 } }) => {
                 </h1>
               </motion.div>
 
-              {/* Navigation Links */}
-              <motion.div className="hidden sm:flex items-center justify-center">
-                <ul className="flex gap-4 md:gap-6 lg:gap-8 justify-center flex-wrap">
-                  <li>
-                    <a
-                      href="#about"
-                      className="font-bold text-white text-xs sm:text-sm md:text-base hover:text-purple-400 transition-colors duration-200"
-                    >
-                      Sobre nosotros
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#servicios"
-                      className="font-bold text-white text-xs sm:text-sm md:text-base hover:text-purple-400 transition-colors duration-200"
-                    >
-                      Servicios
-                    </a>
-                  </li>
+              {/* Navigation Links - Desktop */}
+              <motion.div className="hidden md:flex items-center justify-center flex-1">
+                <ul className="flex gap-4 lg:gap-8 justify-center flex-wrap">
+                  {navLinks.map((link) => (
+                    <li key={link.href}>
+                      <a
+                        href={link.href}
+                        className="font-bold text-white text-sm lg:text-base hover:text-purple-400 transition-colors duration-200"
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
                 </ul>
               </motion.div>
 
-              {/* Admin Button */}
-              <motion.div className="flex gap-2">
-                <a href="/login">
-                  <button className="bg-none hover:bg-purple-700 text-xs sm:text-sm text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:scale-105 transition-all duration-300 shadow-md font-semibold">
+              {/* Admin Button + Mobile Menu Toggle */}
+              <motion.div className="flex items-center gap-1 sm:gap-2">
+                <Link to="/login">
+                  <button className="bg-none hover:bg-purple-700 text-xs sm:text-sm text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:scale-105 transition-all duration-300 shadow-md font-semibold whitespace-nowrap">
                     Administración
                   </button>
-                </a>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen((prev) => !prev)}
+                  className="md:hidden p-2 text-white hover:text-purple-400 transition-colors"
+                  aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+                  aria-expanded={mobileMenuOpen}
+                >
+                  {mobileMenuOpen ? <HiX size={24} /> : <HiMenu size={24} />}
+                </button>
               </motion.div>
             </motion.div>
+
+            {/* Mobile Navigation */}
+            <AnimatePresence>
+              {mobileMenuOpen && (
+                <motion.nav
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="md:hidden overflow-hidden border-t border-white/10"
+                  style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)' }}
+                >
+                  <ul className="flex flex-col py-3 px-4 gap-1">
+                    {navLinks.map((link) => (
+                      <li key={link.href}>
+                        <a
+                          href={link.href}
+                          onClick={closeMobileMenu}
+                          className="block font-bold text-white text-sm py-2.5 px-2 rounded-lg hover:bg-white/10 hover:text-purple-400 transition-colors"
+                        >
+                          {link.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.nav>
+              )}
+            </AnimatePresence>
 
             {/* Bottom border gradient */}
             {isScrolled && (

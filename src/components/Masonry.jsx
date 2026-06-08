@@ -58,7 +58,7 @@ const Masonry = ({
   colorShiftOnHover = false
 }) => {
   const columns = useMedia(
-    ['(min-width:1500px)', '(min-width:1000px)', '(min-width:600px)', '(min-width:400px)'],
+    ['(min-width:1500px)', '(min-width:1000px)', '(min-width:768px)', '(min-width:480px)'],
     [5, 4, 3, 2],
     1
   );
@@ -247,14 +247,14 @@ const Masonry = ({
       {/* Modal para imagen completa */}
       {selectedImage && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-black/50"
+          className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 backdrop-blur-md bg-black/50"
           onClick={() => {
             setSelectedImage(null);
             document.body.style.overflow = 'unset';
           }}
         >
           <div
-            className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center"
+            className="relative max-w-4xl max-h-[85vh] sm:max-h-[90vh] w-full h-full flex items-center justify-center"
             onClick={e => e.stopPropagation()}
           >
             <img
