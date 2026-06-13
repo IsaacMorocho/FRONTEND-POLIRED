@@ -9,7 +9,6 @@ const ArticulosAR = () => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}>
       <h1 
-        style={{ fontFamily: 'Lora, serif' }}
         className='font-black text-2xl md:text-3xl lg:text-4xl text-white'>
         Gestión de Artículos
       </h1>

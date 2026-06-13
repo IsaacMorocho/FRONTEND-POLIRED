@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useContext } from "react";
-import { AuthContext } from "../../layout/AuthContext";
+import { useState, useEffect } from "react";
 import { toast }  from "react-toastify";
 import { FaTrashAlt } from "react-icons/fa";
 import { motion } from 'framer-motion';
+import adminRedService from "../../services/adminRedService";
 
 const EstudiantesAR= () => {
-  const { token } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -15,25 +14,10 @@ const EstudiantesAR= () => {
   const fetchEstudiantes = async () => {
     setLoading(true);
     try {
-      const res = await fetch(
-        "https://backendv2-as6n.onrender.com/api/admin/estudiantes/listar",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setEstudiantes(data.estudiantes || []);
-      } else {
-        toast.error(data.msg || "Error al obtener estudiantes");
-      }
+      const data = await adminRedService.getEstudiantes();
+      setEstudiantes(data.estudiantes || []);
     } catch (error) {
-      toast.error("Error de conexión con el servidor");
+      toast.error(error.response?.data?.msg || "Error de conexión con el servidor");
     } finally {
       setLoading(false);
     }
@@ -44,28 +28,13 @@ const EstudiantesAR= () => {
     if (!selectedId) return;
 
     try {
-      const res = await fetch(
-        `https://backendv2-as6n.onrender.com/api/admin/estudiantes/eliminar/${selectedId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const data = await adminRedService.eliminarEstudiante(selectedId);
+      toast.success(data.msg || "Estudiante eliminado");
+      setEstudiantes((prev) =>
+        prev.filter((est) => est._id !== selectedId)
       );
-
-      const data = await res.json();
-
-      if (res.ok) {
-        toast.success(data.msg);
-        setEstudiantes((prev) =>
-          prev.filter((est) => est._id !== selectedId)
-        );
-      } else {
-        toast.error(data.msg || "Error al eliminar estudiante");
-      }
     } catch (error) {
-      toast.error("Error de conexión con el servidor");
+      toast.error(error.response?.data?.msg || "Error de conexión con el servidor");
     } finally {
       setModalOpen(false);
       setSelectedId(null);
@@ -82,38 +51,37 @@ const EstudiantesAR= () => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
-      className="p-4 md:p-6 bg-slate-300"
+      className="bg-slate-900 border border-slate-700 rounded-lg p-6 shadow-lg mt-6"
     >
-      <h2 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Lista de Estudiantes</h2>
+      <h2 className="text-xl font-bold text-white mb-4">Lista de Usuarios</h2>
 
       {loading ? (
-        <p className="text-sm md:text-base">Cargando...</p>
+        <p className="text-slate-400">Cargando Usuarios...</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full border border-gray-300 rounded-lg overflow-hidden text-sm md:text-base">
-            <thead className="bg-gray-400">
-              <tr>
-                <th className="p-2 md:p-3 border">Nombre</th>
-                <th className="p-2 md:p-3 border">Apellido</th>
-                <th className="p-2 md:p-3 border hidden sm:table-cell">Correo Electronico</th>
-                
-                <th className="p-2 md:p-3 border text-center">Acciones</th>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-800 text-slate-300 border-b border-slate-700">
+                <th className="p-3 font-medium">Nombre</th>
+                <th className="p-3 font-medium">Apellido</th>
+                <th className="p-3 font-medium hidden sm:table-cell">Correo Electrónico</th>
+                <th className="p-3 font-medium text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
             {estudiantes.map((est) => (
-              <tr key={est._id} className="hover:bg-gray-50">
-                <td className="p-3 border">{est.nombre}</td>
-                <td className="p-3 border">{est.apellido}</td>  
-                <td className="p-3 border">{est.email}</td>  
+              <tr key={est._id} className="border-b border-slate-700 hover:bg-slate-800/50 transition">
+                <td className="p-3 text-slate-300">{est.nombre}</td>
+                <td className="p-3 text-slate-300">{est.apellido}</td>  
+                <td className="p-3 text-slate-300 hidden sm:table-cell">{est.email}</td>  
                             
-                <td className="p-3 border text-center">
+                <td className="p-3 text-center">
                   <button
                     onClick={() => {
                       setSelectedId(est._id);
                       setModalOpen(true);
                     }}
-                    className="text-red-500 hover:text-red-700"
+                    className="p-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition"
                   >
                     <FaTrashAlt />
                   </button>
@@ -122,7 +90,7 @@ const EstudiantesAR= () => {
             ))}
             {estudiantes.length === 0 && (
               <tr>
-                <td colSpan="3" className="p-4 text-center text-gray-500">
+                <td colSpan="4" className="p-6 text-center text-slate-500">
                   No hay estudiantes registrados
                 </td>
               </tr>
@@ -133,30 +101,30 @@ const EstudiantesAR= () => {
       )}
 
       {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50 px-4">
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setModalOpen(false)}
           ></div>
 
           {/* Contenido del modal */}
-          <div className="relative bg-white p-6 rounded-lg shadow-lg z-10 max-w-sm w-full">
-            <h3 className="text-lg font-bold mb-4">Confirmar eliminación</h3>
-            <p className="mb-4">
+          <div className="relative bg-slate-800 border border-slate-700 p-6 rounded-lg shadow-lg z-10 max-w-sm w-full">
+            <h3 className="text-lg font-bold text-white mb-2">Confirmar eliminación</h3>
+            <p className="text-slate-300 mb-6">
               ¿Estás seguro de que deseas eliminar este estudiante?
             </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setModalOpen(false)}
-                className="px-3 md:px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 text-sm md:text-base"
-              >
-                Cancelar
-              </button>
+            <div className="flex gap-2">
               <button
                 onClick={eliminarEstudiante}
-                className="px-3 md:px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm md:text-base"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition"
               >
                 Eliminar
+              </button>
+              <button
+                onClick={() => setModalOpen(false)}
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg transition"
+              >
+                Cancelar
               </button>
             </div>
           </div>

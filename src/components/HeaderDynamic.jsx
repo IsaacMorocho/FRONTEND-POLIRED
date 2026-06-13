@@ -3,8 +3,9 @@ import { motion, useTransform, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { HiMenu, HiX } from 'react-icons/hi';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import StarBorder from './StarBorder';
 
-const HeaderDynamic = ({ poliredPosition = { x: 0, y: 0, opacity: 0 } }) => {
+const HeaderDynamic = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { scrollY, isScrolled } = useScrollAnimation(100);
 
@@ -34,7 +35,7 @@ const HeaderDynamic = ({ poliredPosition = { x: 0, y: 0, opacity: 0 } }) => {
   return (
     <>
       {/* Header Fixed */}
-      <motion.header className="fixed top-0 left-0 right-0 z-40">
+      <motion.header className="fixed top-0 left-0 right-0 z-[100]">
         {/* Full-width container con BLUR */}
         <motion.div
           className="w-full"
@@ -62,22 +63,24 @@ const HeaderDynamic = ({ poliredPosition = { x: 0, y: 0, opacity: 0 } }) => {
               }}
             >
               {/* Logo Section */}
-              <motion.div className="flex items-center gap-x-2">
-                <img
-                  className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14"
-                  src="/images/logo_actual.png"
-                  alt="Logo"
-                />
-                <h1
-                  className="font-extrabold tracking-widest text-xl sm:text-2xl lg:text-3xl hidden sm:block"
-                  style={{
-                    WebkitTextStroke: '1.5px #e7eaf0',
-                    color: 'transparent',
-                  }}
-                >
-                  PoliRED
-                </h1>
-              </motion.div>
+              <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                <motion.div className="flex items-center gap-x-2">
+                  <img
+                    className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14"
+                    src="/images/logo_actual.png"
+                    alt="Logo"
+                  />
+                  <h1
+                    className="font-extrabold tracking-widest text-xl sm:text-2xl lg:text-3xl hidden sm:block"
+                    style={{
+                      WebkitTextStroke: '1.5px #e7eaf0',
+                      color: 'transparent',
+                    }}
+                  >
+                    PoliRED
+                  </h1>
+                </motion.div>
+              </Link>
 
               {/* Navigation Links - Desktop */}
               <motion.div className="hidden md:flex items-center justify-center flex-1">
@@ -97,11 +100,18 @@ const HeaderDynamic = ({ poliredPosition = { x: 0, y: 0, opacity: 0 } }) => {
 
               {/* Admin Button + Mobile Menu Toggle */}
               <motion.div className="flex items-center gap-1 sm:gap-2">
-                <Link to="/login">
-                  <button className="bg-none hover:bg-purple-700 text-xs sm:text-sm text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:scale-105 transition-all duration-300 shadow-md font-semibold whitespace-nowrap">
-                    Administración
-                  </button>
-                </Link>
+                <StarBorder
+                  as="a"
+                  href="https://play.google.com/store"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  color="#14ca32"
+                  speed="5s"
+                  thickness={3}
+                  className="text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-4 whitespace-nowrap"
+                >
+                  Descargar App
+                </StarBorder>
 
                 <button
                   type="button"

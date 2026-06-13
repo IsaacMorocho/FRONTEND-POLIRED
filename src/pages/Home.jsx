@@ -1,21 +1,13 @@
-import AppStoreImage from '../assets/appstore.png'
-import GooglePlayImage from '../assets/googleplay.png'
 import { Link } from 'react-router-dom'
-import { MdDashboard } from "react-icons/md";
-import { FiActivity } from "react-icons/fi";
-import { FiAlertCircle } from "react-icons/fi";
-import { FaCommentSms } from "react-icons/fa6";
 import { FaFacebook } from "react-icons/fa";
 import { FaSquareInstagram } from "react-icons/fa6";
 import { FaXTwitter } from "react-icons/fa6";
-import { SiCashapp } from "react-icons/si";
 import { FaCommentDots, FaBook, FaUsers, FaStore, FaGraduationCap, FaHandshake } from "react-icons/fa6";
 import { useEffect, useState } from 'react';
 import { FaArrowUp } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion'
 import { IoClose } from 'react-icons/io5';
 import Aurora from '../components/Aurora';
-import StarBorder from '../components/StarBorder';
 import useSmoothScroll from '../hooks/useSmoothScroll';
 import HeaderDynamic from '../components/HeaderDynamic';
 import Masonry from '../components/Masonry';
@@ -243,6 +235,16 @@ const Home =()=>{
     const [poliredPosition, setPoliredPosition] = useState({ x: 0, y: 0, opacity: 0 });
     const [modalOpen, setModalOpen] = useState(null); // null, 'privacidad', o 'terminos'
     
+    const [showAllMasonry, setShowAllMasonry] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return ( 
         <>
             <motion.div
@@ -273,14 +275,14 @@ const Home =()=>{
                         <HeroWithAnimatedTitle onPoliredUpdate={setPoliredPosition} />
 
                         {/* Features Card Section - Resto del contenido */}
-                        <section className='w-full py-8 md:py-16 px-4'>
-                            <div className='container mx-auto'>
+                        <section className='w-full py-20 sm:py-16 md:py-24 px-4'>
+                            <div className='container mx-auto mt-4 sm:mt-0 mb-4 sm:mb-0'>
                                 <motion.div
                                     initial={{ opacity: 0, y: 30 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true, amount: 0.3 }}
                                     transition={{ duration: 0.6, ease: 'easeOut' }}
-                                    className='relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-800 shadow-xl p-5 sm:p-8 md:p-12'
+                                    className='relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-800 shadow-xl px-5 py-12 sm:p-8 md:p-12'
                                 >
                                     {/* Animated Shine Border */}
                                     <div className='absolute inset-0 rounded-3xl p-[2px] z-0 pointer-events-none'>
@@ -303,7 +305,7 @@ const Home =()=>{
                                             transition={{ duration: 0.7, ease: 'easeOut' }}
                                             className='w-full text-center'
                                         >
-                                            <h2 className='text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-extrabold text-white leading-tight'>
+                                            <h2 className='text-4xl sm:text-5xl lg:text-5xl font-extrabold text-white leading-tight'>
                                                 ¿Qué puedes hacer con <span className='text-purple-400'>PoliRED</span>?
                                             </h2>
                                         </motion.div>
@@ -409,38 +411,56 @@ const Home =()=>{
                                 <div className='relative mb-12 md:mb-16'>
                                     <h1 className='font-semibold text-white text-2xl sm:text-3xl md:text-4xl relative z-1 w-full text-center'>Aprovecha las oportunidades que ofrecen otros usuarios</h1>
                                 </div>
-                                <Masonry
-                                    items={[
-                                    { id: "1", img: "/images/publicaciones/pub1.jpeg", url: "#", height: 400 },
-                                    { id: "2", img: "/images/publicaciones/pub2.jpeg", url: "#", height: 500 },
-                                    { id: "3", img: "/images/publicaciones/pub3.jpeg", url: "#", height: 350 },
-                                    { id: "4", img: "/images/publicaciones/pub4.jpeg", url: "#", height: 450 },
-                                    { id: "5", img: "/images/publicaciones/pub5.jpeg", url: "#", height: 380 },
-                                    { id: "6", img: "/images/publicaciones/pub6.jpeg", url: "#", height: 420 },
-                                    { id: "7", img: "/images/publicaciones/pub7.jpeg", url: "#", height: 390 },
-                                    { id: "8", img: "/images/publicaciones/pub8.jpeg", url: "#", height: 460 },
-                                    { id: "9", img: "/images/publicaciones/pub9.jpeg", url: "#", height: 370 },
-                                    { id: "10", img: "/images/publicaciones/pub10.jpeg", url: "#", height: 410 },
-                                    { id: "11", img: "/images/publicaciones/pub11.jpeg", url: "#", height: 400 },
-                                    { id: "12", img: "/images/publicaciones/pub12.jpeg", url: "#", height: 430 },
-                                    { id: "13", img: "/images/publicaciones/pub13.jpeg", url: "#", height: 360 },
-                                    ]}
-                                    ease="power4.out"
-                                    duration={0.8}
-                                    stagger={0.11}
+                                <div className='relative'>
+                                    <Masonry
+                                        items={[
+                                        { id: "1", img: "/images/publicaciones/pub1.jpeg", url: "#", height: 400 },
+                                        { id: "2", img: "/images/publicaciones/pub2.jpeg", url: "#", height: 500 },
+                                        { id: "3", img: "/images/publicaciones/pub3.jpeg", url: "#", height: 350 },
+                                        { id: "4", img: "/images/publicaciones/pub4.jpeg", url: "#", height: 450 },
+                                        { id: "5", img: "/images/publicaciones/pub5.jpeg", url: "#", height: 380 },
+                                        { id: "6", img: "/images/publicaciones/pub6.jpeg", url: "#", height: 420 },
+                                        { id: "7", img: "/images/publicaciones/pub7.jpeg", url: "#", height: 390 },
+                                        { id: "8", img: "/images/publicaciones/pub8.jpeg", url: "#", height: 460 },
+                                        { id: "9", img: "/images/publicaciones/pub9.jpeg", url: "#", height: 370 },
+                                        { id: "10", img: "/images/publicaciones/pub10.jpeg", url: "#", height: 410 },
+                                        { id: "11", img: "/images/publicaciones/pub11.jpeg", url: "#", height: 400 },
+                                        { id: "12", img: "/images/publicaciones/pub12.jpeg", url: "#", height: 430 },
+                                        { id: "13", img: "/images/publicaciones/pub13.jpeg", url: "#", height: 360 },
+                                        ].slice(0, isMobile && !showAllMasonry ? 4 : undefined)}
+                                        ease="power4.out"
+                                        duration={0.8}
+                                        stagger={0.11}
                                     animateFrom="center"
                                     scaleOnHover
                                     hoverScale={0.95}
                                     blurToFocus
                                     colorShiftOnHover={false}
                                 />
+                                {isMobile && !showAllMasonry && (
+                                    <>
+                                        {/* Degradado sobre las imágenes finales */}
+                                        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none" />
+                                        
+                                        {/* Botón Ver Más */}
+                                        <div className="absolute bottom-4 left-0 w-full flex justify-center z-10">
+                                            <button 
+                                                onClick={() => setShowAllMasonry(true)}
+                                                className="bg-slate-800 text-white font-semibold py-2 sm:py-2.5 px-5 sm:px-6 rounded-full border border-purple-500/50 shadow-lg shadow-purple-500/20 active:scale-95 transition-transform"
+                                            >
+                                                Ver más imágenes
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                                </div>
                             </div>
                         </section>
                         <section id='comentarios' className='w-full py-10 md:py-20 lg:py-28 px-4 overflow-hidden'>
                                 <div className='w-full max-w-7xl mx-auto px-2 sm:px-4 md:px-10'>
                                     <div className='flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-10 lg:gap-8'>
                                     {/* Left side - Statistics */}
-                                    <div className='flex-1 w-full text-center lg:text-left'>
+                                    <div className='w-full lg:w-1/3 text-center lg:text-left'>
                                         <h3 className='text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-3 sm:mb-4'>
                                             +<CountUp
                                                 from={0}
@@ -455,7 +475,7 @@ const Home =()=>{
                                     </div>
 
                                     {/* Right side - Comments Loop */}
-                                    <div className='flex-1 w-full min-w-0'>
+                                    <div className='w-full lg:w-2/3 min-w-0'>
                                         <CommentsLoop
                                         comments={[
                                             {
@@ -483,7 +503,7 @@ const Home =()=>{
                                             text: "La mejor plataforma para estudiantes de la Poli, todo en un solo lugar."
                                             }
                                         ]}
-                                        speed={1.2}
+                                        speed={0.7}
                                         direction="left"
                                         interactive
                                         />
@@ -526,9 +546,15 @@ const Home =()=>{
                                   height: auto;
                                   max-height: min(70vw, 440px);
                                   object-fit: contain;
-                                  opacity: 0.35;
+                                  opacity: 0.15;
                                   z-index: 10;
                                   pointer-events: none;
+                                }
+
+                                @media (min-width: 640px) {
+                                  .grid-center-logo {
+                                    opacity: 0.35;
+                                  }
                                 }
 
                                 @media (min-width: 768px) {
@@ -625,8 +651,8 @@ const Home =()=>{
                                 </motion.div>
                                 
                                 {/* Grid de 2x2 con tarjetas tipo card */}
-                                <div className='w-full max-w-5xl mx-auto px-2 sm:px-4 md:px-8 lg:px-12 py-6 sm:py-10 md:py-12'>
-                                    <div className='relative grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 md:gap-8 justify-items-center'>
+                                <div className='w-full max-w-7xl mx-auto px-2 sm:px-4 md:px-8 lg:px-12 py-6 sm:py-10 md:py-12'>
+                                    <div className='relative grid grid-cols-1 sm:grid-cols-2 gap-y-8 gap-x-8 sm:gap-x-24 md:gap-x-40 lg:gap-x-64 justify-items-center'>
                                         {/* Logo centrado */}
                                         <img className='grid-center-logo' src="/images/logo_facus.png" alt="Logo" />
                                         {/* Red FIQA */}
@@ -717,16 +743,16 @@ const Home =()=>{
                             </div>
                         </section>
                         {/* CONTROL DE ESPACIADO ENTRE SECCIONES: Cambiar py-12 md:py-20 */}
-                        <section id="about" className='w-full py-12 sm:py-16 md:py-24 lg:py-32 px-4 bg-black'>
-                            <div className='container mx-auto bg-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-12 lg:p-16'>
-                                <div className='flex flex-col lg:flex-row gap-8 sm:gap-12 md:gap-16 items-start'>
+                        <section id="about" className='w-full py-24 sm:py-16 md:py-24 lg:py-32 px-4 bg-black'>
+                            <div className='container mx-auto bg-slate-900 rounded-2xl sm:rounded-3xl px-6 py-12 sm:p-8 md:p-12 lg:p-16'>
+                                <div className='flex flex-col lg:flex-row gap-8 sm:gap-12 md:gap-16 items-center'>
                                     {/* Título e imagen lado izquierdo */}
                                     <motion.div 
                                         initial={{ opacity: 0, x: -50 }}
                                         whileInView={{ opacity: 1, x: 0 }}
                                         viewport={{ once: true, amount: 0.3 }}
                                         transition={{ duration: 0.6, ease: 'easeOut' }}
-                                        className='w-full lg:w-1/2 flex flex-col gap-6 sm:gap-8 text-center lg:text-left'
+                                        className='w-full lg:w-1/2 flex flex-col gap-6 sm:gap-8 items-center text-center'
                                     >
                                         <div>
                                             <h2 className='font-bold text-white text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight mb-4 sm:mb-6'>
@@ -741,7 +767,7 @@ const Home =()=>{
                                             viewport={{ once: true, amount: 0.3 }}
                                             transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
                                         >
-                                            <img src="/images/logo_actual.png" alt="Logo PoliRED" className='w-28 sm:w-40 md:w-52 h-auto object-contain mx-auto lg:mx-0' />
+                                            <img src="/images/logo_actual.png" alt="Logo PoliRED" className='w-28 sm:w-40 md:w-52 h-auto object-contain mx-auto' />
                                         </motion.div>
                                     </motion.div>
 
@@ -751,7 +777,7 @@ const Home =()=>{
                                         whileInView={{ opacity: 1, x: 0 }}
                                         viewport={{ once: true, amount: 0.3 }}
                                         transition={{ duration: 0.6, ease: 'easeOut' }}
-                                        className='w-full lg:w-1/2 flex flex-col justify-start'
+                                        className='w-full lg:w-1/2 flex flex-col justify-center'
                                     >
                                         <div className='mb-6'>
                                             <p className='text-gray-300 text-sm uppercase tracking-wider mb-4'>PLATAFORMA ACADÉMICA COLABORATIVA</p>
@@ -782,12 +808,12 @@ const Home =()=>{
                                     transition={{ duration: 0.6, ease: 'easeOut' }}
                                     className='text-center flex flex-col sm:flex-row flex-wrap justify-center items-center gap-2 sm:gap-3 md:gap-4 max-w-full'
                                 >
-                                    <h3 className='text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white'>
+                                    <h3 className='text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white'>
                                         Conectamos
                                     </h3>
                                     <RotatingText
                                         texts={['estudiantes', 'ideas', 'comunidades', 'conocimientos','carreras']}
-                                        mainClassName="px-2 sm:px-4 md:px-6 bg-slate-900 text-white overflow-hidden py-1 sm:py-2 md:py-3 justify-center rounded-lg inline-block text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold max-w-full"
+                                        mainClassName="px-3 sm:px-4 md:px-6 bg-slate-900 text-white overflow-hidden py-1.5 sm:py-2 md:py-3 justify-center rounded-lg inline-block text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold max-w-full"
                                         staggerFrom="first"
                                         initial={{ y: "100%" }}
                                         animate={{ y: 0 }}
@@ -809,7 +835,7 @@ const Home =()=>{
 
                 <footer className='relative w-full bg-black py-12 sm:py-16 md:py-20 text-center overflow-hidden'>
                     {/* Aurora Background - Invertido */}
-                    <div className="absolute top-0 left-0 w-full h-[400px] sm:h-[500px] md:h-[600px] z-0 bg-black scale-y-[-1] overflow-hidden">
+                    <div className="absolute inset-0 w-full h-full z-0 bg-black scale-y-[-1] overflow-hidden">
                         <Aurora
                             colorStops={["#4a5fec","#b390d3","#e72f1f"]}
                             blend={1.2}
@@ -844,7 +870,7 @@ const Home =()=>{
                         </div>
                         <hr className='border-1 border-gray-700' />
                         
-                        {/* Footer Links - Términos y Condiciones / Políticas de Privacidad */}
+                        {/* Footer Links - Términos y Condiciones / Políticas de Privacidad / Administración */}
                         <div className='flex flex-col sm:flex-row justify-center items-center gap-4 md:gap-6'>
                             <p className='text-xs sm:text-sm font-semibold text-gray-300'>
                                 EPN - ESFOT - Desarrollo de Software
@@ -863,6 +889,13 @@ const Home =()=>{
                             >
                                 Políticas de Privacidad
                             </button>
+                            <span className='text-gray-600'>|</span>
+                            <Link
+                                to="/login"
+                                className='text-xs sm:text-sm text-purple-400 hover:text-purple-300 transition-colors underline cursor-pointer'
+                            >
+                                Administración
+                            </Link>
                         </div>
                     </div>
                 </footer>

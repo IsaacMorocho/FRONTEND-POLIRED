@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useMemo, useId } from 'react';
+import { useRef, useEffect, useState } from 'react';
 
 const CommentsLoop = ({
   comments = [
@@ -8,8 +8,7 @@ const CommentsLoop = ({
     'comentario reseña',
     'comentario reseña'
   ],
-  speed = 2,
-  className,
+  speed = 0.8,
   direction = 'left',
   interactive = true
 }) => {
@@ -72,13 +71,14 @@ const CommentsLoop = ({
   const cursorStyle = interactive ? (dragRef.current ? 'grabbing' : 'grab') : 'auto';
 
   return (
-    <div className="relative w-full max-w-full overflow-hidden" style={{ cursor: cursorStyle }}>
-      {/* Fade izquierda */}
-      <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-16 md:w-24 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-      
-      {/* Fade derecha */}
-      <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-16 md:w-24 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
-
+    <div 
+      className="relative w-full max-w-full overflow-hidden" 
+      style={{ 
+        cursor: cursorStyle,
+        WebkitMaskImage: 'linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)',
+        maskImage: 'linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent)'
+      }}
+    >
       {/* Contenedor de comentarios */}
       <div
         ref={containerRef}
@@ -95,7 +95,7 @@ const CommentsLoop = ({
         {[...comments, ...comments, ...comments].map((comment, idx) => (
         <div
             key={idx}
-            className="flex-shrink-0 w-[min(85vw,250px)] sm:w-[280px] md:w-[320px] bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-3 sm:p-4 shadow-lg hover:scale-[1.02] transition-all duration-300"
+            className="flex-shrink-0 w-[min(90vw,320px)] sm:w-[380px] md:w-[450px] bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4 sm:p-5 shadow-lg hover:scale-[1.02] transition-all duration-300"
         >
             {/* Header */}
             <div className="flex items-center gap-3 mb-3">

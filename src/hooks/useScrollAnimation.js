@@ -1,5 +1,5 @@
 import { useMotionValueEvent, useScroll } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 /**
  * Custom hook para detectar posición del scroll y estado del header

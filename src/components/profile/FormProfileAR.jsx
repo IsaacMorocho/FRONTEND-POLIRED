@@ -1,6 +1,9 @@
 import { useState, useEffect, useContext, useMemo } from "react";
 import { toast } from "react-toastify";
-import { AuthContext } from "../../layout/AuthContext";import { motion } from 'framer-motion';
+import { AuthContext } from "../../layout/AuthContext";
+import { motion } from 'framer-motion';
+import adminRedService from "../../services/adminRedService";
+
 const NAME_MIN = 2;
 const NAME_MAX = 50;
 const NAME_REGEX = /^[A-Za-zÁÉÍÓÚÜáéíóúñÑ' -]+$/;
@@ -129,21 +132,7 @@ const FormProfileAR = () => {
 
     setLoading(true);
     try {
-      const url = `${import.meta.env.VITE_BACKEND_URL}/perfil/admin-red/actualizar`;
-      const response = await fetch(url, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.msg || "Error al actualizar");
-      }
+      await adminRedService.updatePerfil(payload);
 
       // Actualizar el usuario en el contexto
       const updatedUser = { ...user, ...payload };

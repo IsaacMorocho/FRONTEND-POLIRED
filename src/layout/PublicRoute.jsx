@@ -6,13 +6,12 @@ const PublicRoute = ({ children }) => {
   const { isAuthenticated, user } = useContext(AuthContext)
 
   if (isAuthenticated) {
-    switch (user?.rol?.toLowerCase()) {
-      case 'superadmin':
-        return <Navigate to="/dashboard" replace />
-      case 'admin_red':
-        return <Navigate to="/dashboardRed" replace />
-      default:
-        return <Navigate to="/no-autorizado" replace />
+    if (user?.rol?.toLowerCase() === 'superadmin') {
+      return <Navigate to="/dashboard" replace />
+    } else if (user?.roles?.includes('admin_red')) {
+      return <Navigate to="/dashboardRed/redesAR" replace />
+    } else {
+      return <Navigate to="/" replace />
     }
   }
 

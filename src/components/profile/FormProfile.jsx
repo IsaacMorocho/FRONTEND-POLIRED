@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { toast } from "react-toastify";
 import { AuthContext } from "../../layout/AuthContext";
 import { motion } from 'framer-motion';
+import superadminService from "../../services/superadminService";
 
 const FormularioPerfil = () => {
   const { token, user, login } = useContext(AuthContext);
@@ -90,28 +91,13 @@ const FormularioPerfil = () => {
 
     setLoading(true);
     try {
-      const url = `${import.meta.env.VITE_BACKEND_URL}/actualizar-superadmin/`;
-      const response = await fetch(url, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.msg || "Error al actualizar");
-      }
-
+      await superadminService.updatePerfil(payload);
       const updatedUser = { ...user, ...payload };
       login(token, updatedUser);
       toast.success("Información actualizada correctamente");
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Error al actualizar los datos");
+      toast.error(error.response?.data?.msg || "Error al actualizar los datos");
     } finally {
       setLoading(false);
     }

@@ -4,6 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { AuthContext } from '../../layout/AuthContext';
 import { motion } from 'framer-motion';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
+import adminRedService from '../../services/adminRedService';
 
 const MIN_LEN = 8;
 const COMPLEXITY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/;
@@ -65,26 +66,10 @@ const CardPasswordAR = () => {
     try {
       setCargando(true);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/perfil/admin-red/actualizar/password`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            passwordactual: actualT,
-            passwordnuevo: nuevaT,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.msg || "Error al actualizar la contraseña");
-      }
+      await adminRedService.updatePassword({
+        passwordactual: actualT,
+        passwordnuevo: nuevaT,
+      });
 
       toast.success("Contraseña actualizada");
       setPasswordActual("");

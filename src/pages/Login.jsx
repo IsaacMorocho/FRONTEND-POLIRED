@@ -2,11 +2,11 @@ import { useState, useContext } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import useFetch from '../hooks/useFetch'
 import { AuthContext } from '../layout/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { FiArrowLeft } from 'react-icons/fi'
+import authService from '../services/authService'
 
 const LOGIN_ROLES = {
   SUPERADMIN: 'superadmin',
@@ -21,36 +21,24 @@ const Login = () => {
   const [forgotEmail, setForgotEmail] = useState('')
   const [recoveryLoading, setRecoveryLoading] = useState(false)
   const [recoveryEmailSent, setRecoveryEmailSent] = useState(false)
+  
   const { register, handleSubmit, formState: { errors } } = useForm()
-  const { fetchDataBackend } = useFetch()
   const { login } = useContext(AuthContext)
 
   const loginUser = async (data) => {
     const email = (data.email || '').trim()
     const password = data.password
-    const isSuperAdmin = loginRole === LOGIN_ROLES.SUPERADMIN
-
-    const url = isSuperAdmin
-      ? `${import.meta.env.VITE_BACKEND_URL}/login`
-      : `${import.meta.env.VITE_BACKEND_URL}/auth/login`
-
-    const payload = isSuperAdmin
-      ? { email, password }
-      : { email, password, context: 'admin_panel' }
 
     try {
-      const response = await fetchDataBackend(url, payload, 'POST')
-
-      if (!response?.token) {
-        toast.error('Credenciales inválidas o error al iniciar sesión')
-        return
-      }
-
-      if (isSuperAdmin) {
-        const rol = (response.rol || '').toLowerCase()
+      let response;
+      
+      if (loginRole === LOGIN_ROLES.SUPERADMIN) {
+        response = await authService.loginSuperAdmin({ email, password });
+        
+        const rol = (response.rol || '').toLowerCase();
         if (rol !== LOGIN_ROLES.SUPERADMIN) {
-          toast.error('Este usuario no tiene permisos de SuperAdmin')
-          return
+          toast.error('Este usuario no tiene permisos de SuperAdmin');
+          return;
         }
 
         const user = {
@@ -61,38 +49,44 @@ const Login = () => {
           email: response.email,
           rol: response.rol,
           roles: [LOGIN_ROLES.SUPERADMIN],
-          avatar: '',
+          avatar: response.avatar || '',
+        }
+        
+        login(response.token, user);
+        toast.success('Bienvenido, Super Administrador');
+        navigate('/dashboard');
+        
+      } else {
+        response = await authService.loginAdminRed({ email, password });
+        
+        const roles = response?.usuario?.roles || [];
+        if (!roles.includes(LOGIN_ROLES.ADMIN_RED)) {
+          toast.error('Este usuario no tiene permisos de Administrador de Red');
+          return;
         }
 
-        login(response.token, user)
-        sessionStorage.setItem('token', response.token)
-        sessionStorage.setItem('user', JSON.stringify(user))
-        navigate('/dashboard')
-        return
+        const user = {
+          id: response?.usuario?._id,
+          nombre: response?.usuario?.nombre,
+          apellido: response?.usuario?.apellido,
+          celular: response?.usuario?.celular || '',
+          email: response?.usuario?.email,
+          roles,
+          avatar: response?.usuario?.fotoPerfil || '',
+          redAsignada: response?.usuario?.redAsignada || null
+        }
+
+        login(response.token, user);
+        toast.success('Bienvenido, Administrador de Red');
+        navigate('/dashboardRed/redesAR');
       }
 
-      const roles = response?.usuario?.roles || []
-      if (!roles.includes(LOGIN_ROLES.ADMIN_RED)) {
-        toast.error('Este usuario no tiene permisos de Administrador de Red')
-        return
-      }
-
-      const user = {
-        id: response?.usuario?._id,
-        nombre: response?.usuario?.nombre,
-        apellido: response?.usuario?.apellido,
-        celular: response?.usuario?.celular || '',
-        email: response?.usuario?.email,
-        roles,
-        avatar: response?.usuario?.fotoPerfil || '',
-      }
-
-      login(response.token, user)
-      sessionStorage.setItem('token', response.token)
-      sessionStorage.setItem('user', JSON.stringify(user))
-      navigate('/dashboardRed/perfilAR')
     } catch (err) {
-      toast.error('Credenciales inválidas o error al iniciar sesión')
+      if (err.response?.status === 401) {
+        toast.error('Credenciales incorrectas para este rol');
+      } else {
+        toast.error(err.response?.data?.msg || 'Error al iniciar sesión');
+      }
     }
   }
 
@@ -113,15 +107,16 @@ const Login = () => {
 
     setRecoveryLoading(true)
     try {
-      await fetchDataBackend(
-        `${import.meta.env.VITE_BACKEND_URL}/recuperar-password`,
-        { email: emailTrimmed },
-        'POST'
-      )
+      if (loginRole === LOGIN_ROLES.SUPERADMIN) {
+        await authService.recuperarPasswordSuperAdmin(emailTrimmed);
+      } else {
+        await authService.recuperarPasswordEstudiante(emailTrimmed);
+      }
+      
       toast.success('Revisa tu correo. Se ha enviado un enlace de recuperación.')
       setRecoveryEmailSent(true)
     } catch (error) {
-      toast.error(error.message || 'Error al solicitar recuperación')
+      toast.error(error.response?.data?.msg || 'Error al solicitar recuperación')
     } finally {
       setRecoveryLoading(false)
     }
@@ -545,42 +540,44 @@ const Login = () => {
       </div>
 
       {/* Right Side - Branding Section */}
-      <div className="hidden lg:flex relative z-10 w-1/2 flex-col justify-between items-center p-12">
+      <div className="hidden lg:flex relative z-10 w-1/2 flex-col justify-center items-center p-12 gap-8">
+        {/* Large Logo */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="relative z-10 text-center space-y-6"
+          className="relative z-10 flex flex-col items-center justify-center"
         >
-          <div className="flex items-center justify-center gap-3 mb-6">
-  
-            <h2 className="text-2xl font-bold text-white">PoliRED</h2>
-          </div>
-
-          <div className="space-y-3">
-            <p className="text-white/90 text-lg font-semibold">Conecta, comparte y crece</p>
-            <p className="text-white/70 text-sm max-w-xs mx-auto leading-relaxed">
-                Plataforma universitearia creada para estudiantes. Brindando una experiencia moderna a la universidad.
-            </p>
+          <div className="w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center">
+            <img
+              src="/images/logo_actual.png"
+              alt="PoliRED Logo"
+              className="w-full h-full object-contain drop-shadow-2xl"
+            />
           </div>
         </motion.div>
 
-        {/* Bottom Info - Large Logo */}
+        {/* Branding Text */}
         <motion.div
-          initial={{ opacity: 0, y: -30 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="relative z-10 w-full flex flex-col items-center justify-center overflow-hidden"
+          className="relative z-10 text-center space-y-6"
         >
-          <div className="w-90 h-85 overflow-hidden flex items-end justify-center mb-[-75px]">
-            <img
-              src="/images/logo_actual.png"
-              alt="PoliRED"
-              className="w-full h-full object-contain"
-            />
+          <div className="flex items-center justify-center gap-3">
+            <h2 className="text-5xl font-extrabold text-white tracking-tight drop-shadow-md">
+              PoliRED
+            </h2>
           </div>
 
-
+          <div className="space-y-4">
+            <p className="text-white/95 text-2xl sm:text-3xl font-bold tracking-wide drop-shadow-sm">
+              Conecta, comparte y crece
+            </p>
+            <p className="text-white/80 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
+              Plataforma universitaria creada para estudiantes. Brindando una experiencia moderna a la universidad.
+            </p>
+          </div>
         </motion.div>
       </div>
 

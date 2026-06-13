@@ -9,14 +9,15 @@ import Dashboard from './layout/Dashboard'
 import DashboardRed from './layout/DashboardRed'
 import Profile from './pages/Profile'
 import ProfileAR from './pages/ProfileAR'
-import Usuarios from './pages/Usuarios'
-import Publicaciones from './pages/Publicaciones'
 import Redes from './pages/Redes'
 import RedesAR from './pages/RedesAR'
 import Reportes from './pages/Reportes'
-import ArticulosAR from './pages/ArticulosAR'
+import RedGlobal from './pages/RedGlobal'
+import Solicitudes from './pages/Solicitudes'
+import SolicitudesRedes from './pages/SolicitudesRedes'
 import ReportesSolicitudesAR from './pages/ReportesSolicitudesAR'
 import EstudiantesAR from './pages/EstudiantesAR'
+import Estudiantes from './pages/Estudiantes'
 import Reset from './pages/recuperarpassword'
 import ProtectedRoute from './layout/ProtectedRoute'
 import PublicRoute from './layout/PublicRoute'
@@ -60,8 +61,6 @@ function App() {
           }
         >
           <Route path="perfilAR" element={<ProfileAR/>}/>
-          <Route path="publicaciones" element={<Publicaciones />} />
-          <Route path="articulos" element={<ArticulosAR />} />
           <Route path="redesAR" element={<RedesAR />} />
           <Route path="reportes" element={<ReportesSolicitudesAR />} />
           <Route path="estudiantes" element={<EstudiantesAR />} />
@@ -77,9 +76,12 @@ function App() {
           }
         >
           <Route index element={<Profile />} />
-          <Route path="usuarios" element={<Usuarios />} />
           <Route path="redes" element={<Redes />} />
+          <Route path="red-global" element={<RedGlobal />} />
           <Route path="reportes" element={<Reportes />} />
+          <Route path="solicitudes" element={<Solicitudes />} />
+          <Route path="solicitudes-redes" element={<SolicitudesRedes />} />
+          <Route path="estudiantes" element={<Estudiantes />} />
         </Route>
 
         {/* Fallback */}

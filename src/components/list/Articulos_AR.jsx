@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import { AuthContext } from "../../layout/AuthContext";
 import { toast } from "react-toastify";
 import { motion } from 'framer-motion';
+import publicacionesService from "../../services/publicacionesService";
 
 const Articulos = () => {
   const [articulos, setArticulos] = useState([]);
@@ -13,13 +13,8 @@ const Articulos = () => {
 
   const fetchArticulos = async () => {
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/publicaciones/articulos/listar/admin`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setArticulos(res.data.articulos || []);
+      const data = await publicacionesService.getArticulosAdmin();
+      setArticulos(data.articulos || []);
     } catch (error) {
       console.error("Error al obtener artículos:", error);
     } finally {
@@ -50,14 +45,9 @@ const Articulos = () => {
     if (!articuloAEliminar) return;
 
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/publicaciones/admin/articulo/eliminar/${articuloAEliminar._id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await publicacionesService.eliminarArticuloAdmin(articuloAEliminar._id);
 
-        toast.success("Articulo eliminado exitosamente")
+      toast.success("Articulo eliminado exitosamente");
       setArticulos((prev) =>
         prev.filter((art) => art._id !== articuloAEliminar._id)
       );
@@ -139,7 +129,7 @@ const Articulos = () => {
           <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-md w-full z-10">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               ¿Deseas eliminar el artículo{" "}
-              <span className="italic">"{articuloAEliminar.titulo}"</span> de{" "}
+              <span className="italic">&quot;{articuloAEliminar.titulo}&quot;</span> de{" "}
               <span className="font-bold">
                 {articuloAEliminar.autorId.nombre}{" "}
                 {articuloAEliminar.autorId.apellido}

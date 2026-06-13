@@ -1,4 +1,4 @@
-  import { useContext } from 'react'
+import { useContext } from 'react'
 import { Navigate } from 'react-router-dom'
 import { AuthContext } from './AuthContext'
 
@@ -16,7 +16,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     if (!hasRole) {
       // Si el usuario tiene un rol diferente, lo redirigimos según su rol
       if (user?.roles?.includes('admin_red')) {
-        return <Navigate to="/dashboardRed" replace />
+        return <Navigate to="/dashboardRed/redesAR" replace />
       } else if (user?.roles?.includes('superadmin') || user?.rol?.toLowerCase() === 'superadmin') {
         return <Navigate to="/dashboard" replace />
       } else {

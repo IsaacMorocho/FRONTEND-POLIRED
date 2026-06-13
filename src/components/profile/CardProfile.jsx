@@ -2,27 +2,17 @@ import { useEffect, useState, useContext } from "react";
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { AuthContext } from '../../layout/AuthContext';
+import superadminService from '../../services/superadminService';
+import { compressImage } from '../../utils/imageCompression';
 
 export const CardProfile = () => {
   const [perfil, setPerfil] = useState(null);
   const [subiendo, setSubiendo] = useState(false);
-  const { updateUser, token: contextToken, user } = useContext(AuthContext);
-
-  const token = contextToken || sessionStorage.getItem("token");
+  const { updateUser, user } = useContext(AuthContext);
 
   const fetchPerfil = async () => {
-    if (!token) return;
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/perfil-superadmin`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) throw new Error("Error al obtener el perfil");
-      const data = await response.json();
+      const data = await superadminService.getPerfil();
       setPerfil(data);
     } catch (error) {
       console.error("Perfil error:", error);
@@ -46,29 +36,15 @@ export const CardProfile = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("imagen", file);
-
     try {
       setSubiendo(true);
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/perfil/avatar`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.msg || "Error al actualizar el avatar");
-      }
+      const compressedFile = await compressImage(file);
       
-      const data = await response.json();
+      const formData = new FormData();
+      formData.append("imagen", compressedFile);
 
+      const data = await superadminService.updateAvatar(formData);
+      
       setPerfil((prev) => ({
         ...prev, 
         avatar: data.avatar,
@@ -78,7 +54,7 @@ export const CardProfile = () => {
       toast.success(data.msg || "Avatar actualizado");
     } catch (error) {
       console.error("Error al subir avatar:", error);
-      toast.error(error.message || "Error al subir el avatar");
+      toast.error(error.response?.data?.msg || "Error al subir el avatar");
     } finally {
       setSubiendo(false);
     }
@@ -102,7 +78,7 @@ export const CardProfile = () => {
       {/* Avatar Section */}
       <div className="flex flex-col items-center space-y-4">
         <img
-          src={perfil.avatar || "https://cdn-icons-png.flaticon.com/512/4715/4715329.png"}
+          src={perfil.avatar || `https://ui-avatars.com/api/?name=${perfil.nombre}+${perfil.apellido}&background=2563eb&color=fff&size=128`}
           alt="perfil"
           className="w-32 h-32 rounded-full border-2 border-blue-500 object-cover shadow-lg"
         />
@@ -134,10 +110,14 @@ export const CardProfile = () => {
           <span className="text-white font-medium text-right text-sm break-all">{perfil.email}</span>
         </div>
         <div className="flex justify-between items-start border-t border-slate-700 pt-3 mt-3">
-          <span className="text-slate-400 text-sm">Rol</span>
-          <span className="inline-block px-3 py-1 bg-blue-600/30 text-blue-300 rounded-full text-xs font-medium">
-            {perfil.rol}
-          </span>
+          <span className="text-slate-400 text-sm">Roles</span>
+          <div className="flex flex-wrap gap-2 justify-end">
+            {(perfil.roles || [perfil.rol]).filter(Boolean).map((r, i) => (
+              <span key={i} className="inline-block px-3 py-1 bg-blue-600/30 text-blue-300 rounded-full text-xs font-medium">
+                {r}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </motion.div>

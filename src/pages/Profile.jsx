@@ -13,7 +13,6 @@ const Profile = () => {
       {/* Encabezado */}
       <div>
         <h1 
-          style={{ fontFamily: 'Lora, serif' }}
           className='text-3xl font-bold text-white mb-2'
         >
           Mi Perfil
@@ -22,36 +21,36 @@ const Profile = () => {
       </div>
 
       {/* Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Información y Contraseña - 2 columnas */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+        <div className="lg:col-span-1">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
+          >
+            <CardProfile />
+          </motion.div>
+        </div>
+        <div className="lg:col-span-2 space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
           >
             <FormProfile />
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.3 }}
           >
             <CardPassword />
           </motion.div>
         </div>
-
-        {/* Tarjeta de Perfil - 1 columna */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <CardProfile />
-        </motion.div>
       </div>
     </motion.div>
   )
 }
 
 export default Profile
+

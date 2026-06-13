@@ -1,31 +1,23 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../layout/AuthContext";
 import { TrashIcon } from "@heroicons/react/24/outline";
-import { motion } from 'framer-motion'; 
+import { motion } from 'framer-motion';
+import publicacionesService from "../../services/publicacionesService"; 
 
 const Publicaciones_Panel_AR = () => {
-  const { token } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [publicaciones, setPublicaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [publicacionAEliminar, setPublicacionAEliminar] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const API_URL = import.meta.env.VITE_BACKEND_URL;
-
   useEffect(() => {
     const fetchPublicaciones = async () => {
       try {
-        const res = await fetch(`${API_URL}/publicaciones/listar/admin`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const redId = user?.redAsignada;
+        if (!redId) return;
 
-        if (!res.ok) throw new Error("Error al obtener publicaciones");
-
-        const data = await res.json();
+        const data = await publicacionesService.getPublicacionesByRed(redId);
         setPublicaciones(data);
       } catch (error) {
         console.error(error);
@@ -34,26 +26,16 @@ const Publicaciones_Panel_AR = () => {
       }
     };
 
-    if (token) {
+    if (user?.redAsignada) {
       fetchPublicaciones();
     }
-  }, [token]);
+  }, [user]);
 
   const eliminarPublicacion = async () => {
     if (!publicacionAEliminar) return;
 
     try {
-      const res = await fetch(
-        `${API_URL}/publicaciones/admin/eliminar/${publicacionAEliminar._id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!res.ok) throw new Error("Error al eliminar la publicación");
+      await publicacionesService.eliminarPublicacionAdmin(publicacionAEliminar._id);
 
       // Filtrar publicación eliminada
       setPublicaciones((prev) =>
@@ -148,7 +130,7 @@ const Publicaciones_Panel_AR = () => {
               {publicacionAEliminar.autorId.nombre}{" "}
               {publicacionAEliminar.autorId.apellido}
             </span>{" "}
-            titulada <span className="italic">"{publicacionAEliminar.titulo}"</span>?
+            titulada <span className="italic">&quot;{publicacionAEliminar.titulo}&quot;</span>?
           </h3>
           <div className="flex justify-end gap-3 mt-4">
             <button

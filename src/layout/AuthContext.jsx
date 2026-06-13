@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect } from 'react'
 
 export const AuthContext = createContext()
+
 export const AuthProvider = ({ children }) => {
   // Inicializar desde sessionStorage
   const [token, setToken] = useState(() => sessionStorage.getItem('token') || '')
@@ -8,14 +9,29 @@ export const AuthProvider = ({ children }) => {
     const stored = sessionStorage.getItem('user')
     return stored ? JSON.parse(stored) : null
   })
+  const [role, setRole] = useState(() => sessionStorage.getItem('role') || null)
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!sessionStorage.getItem('token'))
 
   const login = (newToken, userObj) => {
-    sessionStorage.setItem('token', newToken)
-    sessionStorage.setItem('user', JSON.stringify(userObj))
-    setToken(newToken)
-    setUser(userObj)
-    setIsAuthenticated(true)
+    let currentRole = null;
+    
+    // Detectar el rol basado en la estructura que devuelve el backend
+    if (userObj.rol === 'SuperAdmin') {
+      currentRole = 'superadmin';
+    } else if (Array.isArray(userObj.roles) && userObj.roles.includes('admin_red')) {
+      currentRole = 'admin_red';
+    }
+
+    sessionStorage.setItem('token', newToken);
+    sessionStorage.setItem('user', JSON.stringify(userObj));
+    if (currentRole) {
+      sessionStorage.setItem('role', currentRole);
+    }
+    
+    setToken(newToken);
+    setUser(userObj);
+    setRole(currentRole);
+    setIsAuthenticated(true);
   }
   
   const updateUser = (updatedFields) => {
@@ -27,8 +43,10 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     sessionStorage.removeItem('token')
     sessionStorage.removeItem('user')
+    sessionStorage.removeItem('role')
     setToken('')
     setUser(null)
+    setRole(null)
     setIsAuthenticated(false)
   }
 
@@ -37,11 +55,12 @@ export const AuthProvider = ({ children }) => {
     if (!token) {
       setIsAuthenticated(false)
       setUser(null)
+      setRole(null)
     }
   }, [token])
 
   return (
-    <AuthContext.Provider value={{ token, user, isAuthenticated, login, updateUser, logout }}>
+    <AuthContext.Provider value={{ token, user, role, isAuthenticated, login, updateUser, logout }}>
       {children}
     </AuthContext.Provider>
   )

@@ -1,12 +1,12 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { AuthContext } from '../../layout/AuthContext';
 import { motion } from 'framer-motion';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
+import superadminService from '../../services/superadminService';
 
 const CardPassword = () => {
-  const { token: contextToken } = useContext(AuthContext);
+
   const [showActual, setShowActual] = useState(false);
   const [showNueva, setShowNueva] = useState(false);
   const [passwordActual, setPasswordActual] = useState("");
@@ -36,39 +36,17 @@ const CardPassword = () => {
 
     try {
       setCargando(true);
-      const token = contextToken || sessionStorage.getItem("token");
-      if (!token) {
-        toast.error("Sesión expirada. Inicia sesión nuevamente");
-        return;
-      }
-
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/superadmin/actualizar-password/`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            passwordactual: passwordActual,
-            passwordnuevo: passwordNuevo,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.msg || "Error al actualizar la contraseña");
-      }
+      await superadminService.updatePassword({
+        passwordactual: passwordActual,
+        passwordnuevo: passwordNuevo,
+      });
 
       toast.success("Contraseña actualizada");
       setPasswordActual("");
       setPasswordNuevo("");
     } catch (error) {
       console.error("Error:", error);
-      toast.error(error.message || "Error al actualizar");
+      toast.error(error.response?.data?.msg || "Error al actualizar");
     } finally {
       setCargando(false);
     }

@@ -1,480 +1,587 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { FiTrash2, FiEye } from "react-icons/fi";
-import { MdWarning, MdAssignmentTurnedIn, MdPendingActions } from "react-icons/md";
-import { AiOutlineFileAdd } from "react-icons/ai";
-import axios from "axios";
-import { AuthContext } from "../../layout/AuthContext";
-import { motion } from 'framer-motion';
+import { FiX, FiAlertCircle, FiCalendar, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { MdWarning, MdAssignmentTurnedIn, MdPendingActions, MdFilterList, MdCheckCircle, MdCancel } from "react-icons/md";
+import { motion, AnimatePresence } from 'framer-motion';
+import adminRedService from "../../services/adminRedService";
 
 const ReportesSolicitudesAR = () => {
   const [reportes, setReportes] = useState([]);
   const [solicitudesVerificacion, setSolicitudesVerificacion] = useState([]);
   const [solicitudesRehabilitacion, setSolicitudesRehabilitacion] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState('reportes');
+  
+  // Filtros de la barra lateral
+  const [vistaSeleccionada, setVistaSeleccionada] = useState('reportes'); // 'reportes', 'verificacion', 'rehabilitacion'
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState('pendiente'); // 'pendiente', 'resuelto', 'rechazado'
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('Todas');
+
   const [modalDetalles, setModalDetalles] = useState({ visible: false, item: null, tipo: null });
-  const [modalCrearSolicitud, setModalCrearSolicitud] = useState({ visible: false, tipo: null });
-  const [descriptionSolicitud, setDescriptionSolicitud] = useState("");
-  const { token: contextToken } = useContext(AuthContext);
-  const token = contextToken || sessionStorage.getItem("token");
 
   const API_BASE = import.meta.env.VITE_BACKEND_URL;
 
-  // Cargar reportes de publicaciones
+  // Paginación
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 6;
+
+  const getImageUrl = (path) => {
+    if (!path || path === 'null' || path === 'undefined') return null;
+    if (path.startsWith('http') || path.startsWith('data:')) return path;
+    const cleanPath = path.replace(/\\/g, '/');
+    const base = API_BASE?.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
+    return `${base}${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
+  };
+
+  // Cargar datos
   const fetchReportes = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/reportes`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setReportes(Array.isArray(res.data) ? res.data : res.data.reportes || []);
+      const data = await adminRedService.getReportes();
+      setReportes(Array.isArray(data) ? data : data.reportes || []);
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al cargar reportes");
     } finally {
       setLoading(false);
     }
   };
 
-  // Cargar solicitudes de verificación
   const fetchSolicitudesVerificacion = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/solicitudes/verificacion`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSolicitudesVerificacion(Array.isArray(res.data) ? res.data : res.data.solicitudes || []);
+      const data = await adminRedService.getSolicitudesVerificacion();
+      setSolicitudesVerificacion(Array.isArray(data) ? data : data.solicitudes || []);
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al cargar solicitudes");
     } finally {
       setLoading(false);
     }
   };
 
-  // Cargar solicitudes de rehabilitación
   const fetchSolicitudesRehabilitacion = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/solicitudes/rehabilitar`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSolicitudesRehabilitacion(Array.isArray(res.data) ? res.data : res.data.solicitudes || []);
+      const data = await adminRedService.getSolicitudesRehabilitacion();
+      setSolicitudesRehabilitacion(Array.isArray(data) ? data : data.solicitudes || []);
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al cargar solicitudes");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (tab === 'reportes') fetchReportes();
-    else if (tab === 'verificacion') fetchSolicitudesVerificacion();
-    else if (tab === 'rehabilitacion') fetchSolicitudesRehabilitacion();
-  }, [tab]);
+    if (vistaSeleccionada === 'reportes') fetchReportes();
+    else if (vistaSeleccionada === 'verificacion') fetchSolicitudesVerificacion();
+    else if (vistaSeleccionada === 'rehabilitacion') fetchSolicitudesRehabilitacion();
+    setPaginaActual(1); // Reset page on view change
+  }, [vistaSeleccionada]);
 
-  // Resolver reporte
+  // Reset page when filters change
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [estadoSeleccionado, categoriaSeleccionada]);
+
+  // Acciones
   const handleResolverReporte = async (reporteId, estado) => {
     try {
-      await axios.patch(`${API_BASE}/reportes/${reporteId}/resolver`, 
-        { estado },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setReportes(reportes.filter(r => r._id !== reporteId));
+      await adminRedService.resolverReporte(reporteId, { estado });
+      const nuevoEstado = estado.toLowerCase() === 'resuelta' ? 'resuelto' : estado.toLowerCase();
+      setReportes(reportes.map(r => r._id === reporteId ? { ...r, estado: nuevoEstado } : r));
       setModalDetalles({ visible: false, item: null, tipo: null });
       toast.success(`Reporte ${estado}`);
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al resolver reporte");
-    }
-  };
-
-  // Eliminar reporte
-  const handleEliminarReporte = async (reporteId) => {
-    try {
-      await axios.delete(`${API_BASE}/reportes/${reporteId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setReportes(reportes.filter(r => r._id !== reporteId));
-      toast.success("Reporte eliminado");
-    } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al eliminar reporte");
     }
   };
 
-  // Crear solicitud de verificación
-  const handleCrearSolicitudVerificacion = async () => {
-    if (!descriptionSolicitud.trim()) {
-      toast.error("Debes agregar una descripción");
-      return;
-    }
-    try {
-      const redId = sessionStorage.getItem("redId") || ""; // Necesita redId
-      await axios.post(`${API_BASE}/redes/solicitar-verificacion`,
-        { redId, descripcion: descriptionSolicitud },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setDescriptionSolicitud("");
-      setModalCrearSolicitud({ visible: false, tipo: null });
-      fetchSolicitudesVerificacion();
-      toast.success("Solicitud de verificación creada");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al crear solicitud");
-    }
-  };
+  // Lógica de filtrado unificada
+  let itemsMostrados = [];
+  let categoriasDisponibles = ['Todas'];
 
-  // Crear solicitud de rehabilitación
-  const handleCrearSolicitudRehabilitacion = async () => {
-    if (!descriptionSolicitud.trim()) {
-      toast.error("Debes agregar una descripción");
-      return;
-    }
-    try {
-      const redId = sessionStorage.getItem("redId") || "";
-      await axios.post(`${API_BASE}/solicitudes/rehabilitar`,
-        { redId, descripcion: descriptionSolicitud },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setDescriptionSolicitud("");
-      setModalCrearSolicitud({ visible: false, tipo: null });
-      fetchSolicitudesRehabilitacion();
-      toast.success("Solicitud de rehabilitación creada");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al crear solicitud");
-    }
-  };
+  if (vistaSeleccionada === 'reportes') {
+    // Normalizar estados para filtrado
+    let filtrados = reportes.filter(r => {
+      if (estadoSeleccionado === 'pendiente') return r.estado === 'pendiente';
+      if (estadoSeleccionado === 'resuelto') return ['Aprobada', 'resuelto', 'Resuelta'].includes(r.estado);
+      if (estadoSeleccionado === 'rechazado') return ['Rechazada', 'rechazado'].includes(r.estado);
+      return true;
+    });
 
-  // Eliminar solicitud
-  const handleEliminarSolicitud = async (solicitudId, tipo) => {
-    try {
-      const endpoint = tipo === 'verificacion' 
-        ? `/solicitudes/verificacion/${solicitudId}`
-        : `/solicitudes/rehabilitar/${solicitudId}`;
-      
-      await axios.delete(`${API_BASE}${endpoint}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (tipo === 'verificacion') {
-        setSolicitudesVerificacion(solicitudesVerificacion.filter(s => s._id !== solicitudId));
-      } else {
-        setSolicitudesRehabilitacion(solicitudesRehabilitacion.filter(s => s._id !== solicitudId));
-      }
-      toast.success("Solicitud eliminada");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al eliminar solicitud");
-    }
-  };
+    categoriasDisponibles = ['Todas', ...new Set(reportes.map(r => r.tipo || 'Sin categoría'))];
 
-  const tabs = [
-    { key: 'reportes', label: 'Reportes', icon: MdWarning },
-    { key: 'verificacion', label: 'Verificación', icon: MdPendingActions },
-    { key: 'rehabilitacion', label: 'Rehabilitación', icon: MdPendingActions },
-  ];
+    if (categoriaSeleccionada !== 'Todas') {
+      filtrados = filtrados.filter(r => (r.tipo || 'Sin categoría') === categoriaSeleccionada);
+    }
+    itemsMostrados = filtrados;
+  } else if (vistaSeleccionada === 'verificacion') {
+    itemsMostrados = solicitudesVerificacion.filter(s => {
+      if (estadoSeleccionado === 'pendiente') return s.estado === 'pendiente' || !s.estado;
+      if (estadoSeleccionado === 'resuelto') return s.estado === 'Aprobada';
+      if (estadoSeleccionado === 'rechazado') return s.estado === 'Rechazada';
+      return true;
+    });
+  } else if (vistaSeleccionada === 'rehabilitacion') {
+    itemsMostrados = solicitudesRehabilitacion.filter(s => {
+      if (estadoSeleccionado === 'pendiente') return s.estado === 'pendiente' || !s.estado;
+      if (estadoSeleccionado === 'resuelto') return s.estado === 'Aprobada';
+      if (estadoSeleccionado === 'rechazado') return s.estado === 'Rechazada';
+      return true;
+    });
+  }
+
+  const totalPaginas = Math.ceil(itemsMostrados.length / itemsPorPagina);
+  const itemsPaginados = itemsMostrados.slice((paginaActual - 1) * itemsPorPagina, paginaActual * itemsPorPagina);
+
+  const resetFiltros = () => {
+    setVistaSeleccionada('reportes');
+    setEstadoSeleccionado('pendiente');
+    setCategoriaSeleccionada('Todas');
+    setPaginaActual(1);
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-6 bg-slate-900 rounded-lg p-6"
-    >
-      {/* Encabezado */}
-      <div>
-        <h1 style={{ fontFamily: 'Lora, serif' }} className="text-3xl font-bold text-white mb-2">
-          Reportes y Solicitudes
-        </h1>
-        <p className="text-slate-400">Gestiona reportes de publicaciones y solicitudes</p>
-      </div>
-
-      {/* Pestañas */}
-      <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-4">
-        <div className="flex gap-2 flex-wrap">
-          {tabs.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`px-4 py-2 rounded-lg transition text-sm font-medium ${
-                tab === key
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                  : 'bg-slate-700/50 text-slate-300 hover:text-white'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+    <div className="flex flex-col lg:flex-row gap-6 h-full p-2 sm:p-4">
+      {/* ---------------- BARRA LATERAL (FILTROS) ---------------- */}
+      <motion.div 
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="w-full lg:w-72 shrink-0 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col gap-8 shadow-xl lg:sticky lg:top-0 h-fit"
+      >
+        <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <MdFilterList className="text-blue-500" />
+            Filtros
+          </h2>
+          <button onClick={resetFiltros} className="text-sm text-slate-400 hover:text-blue-400 transition font-medium">
+            Limpiar
+          </button>
         </div>
+
+        {/* Vista (Tipo de Solicitud) */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Tipo de Vista</h3>
+          <div className="flex flex-col gap-2">
+            {[
+              { id: 'reportes', label: 'Reportes', icon: MdWarning },
+              { id: 'verificacion', label: 'Verificación', icon: MdPendingActions },
+              { id: 'rehabilitacion', label: 'Rehabilitación', icon: MdAssignmentTurnedIn },
+            ].map(opt => (
+              <label key={opt.id} className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative flex items-center justify-center w-5 h-5">
+                  <input
+                    type="radio"
+                    name="vista"
+                    value={opt.id}
+                    checked={vistaSeleccionada === opt.id}
+                    onChange={() => setVistaSeleccionada(opt.id)}
+                    className="peer sr-only"
+                  />
+                  <div className="w-5 h-5 rounded-full border-2 border-slate-600 peer-checked:border-blue-500 peer-checked:bg-blue-500 transition-all"></div>
+                  <div className="absolute w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                </div>
+                <span className={`text-sm font-medium transition ${vistaSeleccionada === opt.id ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`}>
+                  {opt.label}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Estado */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Estado</h3>
+          <div className="flex flex-col gap-2">
+            {[
+              { id: 'pendiente', label: 'Pendientes', color: 'text-yellow-500' },
+              { id: 'resuelto', label: 'Resueltos / Aprobados', color: 'text-green-500' },
+              { id: 'rechazado', label: 'Rechazados', color: 'text-red-500' },
+            ].map(opt => (
+              <label key={opt.id} className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative flex items-center justify-center w-5 h-5">
+                  <input
+                    type="radio"
+                    name="estado"
+                    value={opt.id}
+                    checked={estadoSeleccionado === opt.id}
+                    onChange={() => setEstadoSeleccionado(opt.id)}
+                    className="peer sr-only"
+                  />
+                  <div className="w-5 h-5 rounded-full border-2 border-slate-600 peer-checked:border-blue-500 peer-checked:bg-blue-500 transition-all"></div>
+                  <div className="absolute w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                </div>
+                <span className={`text-sm font-medium transition ${estadoSeleccionado === opt.id ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`}>
+                  {opt.label}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Categoría (Amenities / Property Type) */}
+        {vistaSeleccionada === 'reportes' && categoriasDisponibles.length > 1 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Categoría</h3>
+            <div className="flex flex-wrap gap-2">
+              {categoriasDisponibles.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setCategoriaSeleccionada(cat)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                    categoriaSeleccionada === cat
+                      ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20'
+                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </motion.div>
+
+      {/* ---------------- CUADRÍCULA DE TARJETAS (PROPERTY LIST) ---------------- */}
+      <div className="flex-1 flex flex-col">
+        {/* Cabecera Lista */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Lista de Solicitudes</h1>
+          <div className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-slate-300">
+            Total: <span className="font-bold text-white">{itemsMostrados.length}</span>
+          </div>
+        </div>
+
+        {/* Loading / Empty States */}
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-slate-400 text-lg animate-pulse">Cargando datos...</div>
+          </div>
+        ) : itemsMostrados.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-slate-500 text-lg flex flex-col items-center gap-3">
+              <MdAssignmentTurnedIn size={48} className="text-slate-600" />
+              <p>No se encontraron resultados para los filtros aplicados</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Grid de Tarjetas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <AnimatePresence>
+                {itemsPaginados.map((item, idx) => {
+                  // Extraer datos comunes para la tarjeta
+                  const isReporte = vistaSeleccionada === 'reportes';
+                  const titulo = isReporte ? item.tipo : (vistaSeleccionada === 'verificacion' ? 'Solicitud de Verificación' : 'Solicitud de Rehabilitación');
+                  const desc = item.descripcion || 'Sin descripción';
+                  const isResolved = ['Aprobada', 'resuelto', 'Resuelta'].includes(item.estado);
+                  const isRejected = ['Rechazada', 'rechazado'].includes(item.estado);
+                  
+                  // Imagen (Si es reporte y tiene mediaUrls, usar la imagen de la publicacion. Sino un gradiente)
+                  let coverImgUrl = null;
+                  if (isReporte && item.meta?.publicacionId?.mediaUrls?.[0]) {
+                    coverImgUrl = getImageUrl(item.meta.publicacionId.mediaUrls[0]);
+                  }
+                  
+                  return (
+                    <motion.div
+                      key={item._id || idx}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      whileHover={{ y: -5 }}
+                      className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-xl group cursor-pointer flex flex-col"
+                      onClick={() => setModalDetalles({ visible: true, item, tipo: isReporte ? 'reporte' : vistaSeleccionada })}
+                    >
+                      {/* Portada de Tarjeta */}
+                      <div className="relative h-48 bg-slate-800 overflow-hidden shrink-0">
+                        {coverImgUrl ? (
+                          <img src={coverImgUrl} alt="Cover" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+                        ) : (
+                          <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${
+                            isReporte ? 'from-purple-900/50 to-blue-900/50' : 'from-slate-800 to-slate-700'
+                          }`}>
+                            <MdWarning size={64} className="text-white/10" />
+                          </div>
+                        )}
+                        
+                        {/* Status Badge */}
+                        <div className="absolute top-4 left-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg ${
+                            isResolved ? 'bg-green-600 text-white' :
+                            isRejected ? 'bg-red-600 text-white' :
+                            'bg-yellow-600 text-white'
+                          }`}>
+                            {item.estado ? item.estado.toUpperCase() : 'PENDIENTE'}
+                          </span>
+                        </div>
+                        
+                      </div>
+
+                      {/* Cuerpo de la Tarjeta */}
+                      <div className="p-5 flex-1 flex flex-col">
+                        <h3 className="text-xl font-bold text-white mb-2 line-clamp-1">{titulo}</h3>
+                        
+                        <div className="flex items-start gap-2 text-slate-400 text-sm mb-4">
+                          <FiAlertCircle className="mt-1 shrink-0" />
+                          <p className="line-clamp-2">{desc}</p>
+                        </div>
+
+                        {/* Etiquetas Inferiores (Fecha) */}
+                        <div className="mt-auto pt-4 border-t border-slate-800">
+                          <div className="inline-flex items-center gap-1.5 text-xs text-slate-300 bg-slate-800 px-2 py-1 rounded-md">
+                            <FiCalendar size={12} className="text-purple-400" />
+                            <span>{new Date(item.createdAt || item.timestamp || Date.now()).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+
+            {/* Paginación Siempre Visible */}
+            {itemsMostrados.length > 0 && (
+              <div className="flex flex-col sm:flex-row justify-between items-center mt-8 pt-6 border-t border-slate-800 gap-4">
+                {/* Lado izquierdo: Showing Result */}
+                <div className="flex items-center gap-2 text-sm text-slate-400">
+                  <span>Mostrando Resultados:</span>
+                  <span className="px-3 py-1 bg-slate-800 rounded-full text-slate-300 font-medium border border-slate-700">
+                    {(paginaActual - 1) * itemsPorPagina + 1} - {Math.min(paginaActual * itemsPorPagina, itemsMostrados.length)} de {itemsMostrados.length}
+                  </span>
+                </div>
+
+                {/* Lado derecho: Controles */}
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <button
+                    onClick={() => setPaginaActual(p => Math.max(1, p - 1))}
+                    disabled={paginaActual === 1}
+                    className="flex items-center gap-1 text-sm font-medium text-slate-400 hover:text-white disabled:opacity-50 disabled:hover:text-slate-400 transition"
+                  >
+                    <FiChevronLeft size={18} /> Anterior
+                  </button>
+                  
+                  <div className="flex items-center gap-2">
+                    {Array.from({ length: totalPaginas || 1 }, (_, i) => i + 1).map(pageNum => (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPaginaActual(pageNum)}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl text-base font-medium transition ${
+                          paginaActual === pageNum 
+                            ? 'border border-slate-600 text-blue-400' 
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setPaginaActual(p => Math.min(totalPaginas || 1, p + 1))}
+                    disabled={paginaActual === (totalPaginas || 1)}
+                    className="flex items-center gap-1 text-sm font-medium text-slate-400 hover:text-white disabled:opacity-50 disabled:hover:text-slate-400 transition"
+                  >
+                    Siguiente <FiChevronRight size={18} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
-      {/* Contenido por pestaña */}
-      <div className="space-y-4">
-        {tab === 'reportes' && (
-          <>
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <MdWarning /> Reportes de Publicaciones
-            </h2>
-            {loading ? (
-              <div className="text-slate-400 text-center py-8">Cargando reportes...</div>
-            ) : reportes.length === 0 ? (
-              <div className="text-slate-400 text-center py-8">No hay reportes pendientes</div>
-            ) : (
-              <div className="space-y-3">
-                {reportes.map((reporte) => (
-                  <motion.div
-                    key={reporte._id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-slate-800 border border-slate-700 rounded-lg p-4 flex justify-between items-center"
-                  >
-                    <div className="flex-1">
-                      <p className="text-white font-semibold">{reporte.tipo}</p>
-                      <p className="text-slate-400 text-sm">{reporte.descripcion}</p>
-                      <p className="text-slate-500 text-xs mt-1">Estado: {reporte.estado}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setModalDetalles({ visible: true, item: reporte, tipo: 'reporte' })}
-                        className="p-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded transition"
-                      >
-                        <FiEye size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleEliminarReporte(reporte._id)}
-                        className="p-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition"
-                      >
-                        <FiTrash2 size={18} />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        {tab === 'verificacion' && (
-          <>
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                <MdPendingActions /> Solicitudes de Verificación
-              </h2>
-              <button
-                onClick={() => setModalCrearSolicitud({ visible: true, tipo: 'verificacion' })}
-                className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:shadow-lg transition flex items-center gap-2 text-sm"
-              >
-                <AiOutlineFileAdd size={18} />
-                Crear Solicitud
-              </button>
-            </div>
-            {loading ? (
-              <div className="text-slate-400 text-center py-8">Cargando solicitudes...</div>
-            ) : solicitudesVerificacion.length === 0 ? (
-              <div className="text-slate-400 text-center py-8">No hay solicitudes de verificación</div>
-            ) : (
-              <div className="space-y-3">
-                {solicitudesVerificacion.map((solicitud) => (
-                  <motion.div
-                    key={solicitud._id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-slate-800 border border-slate-700 rounded-lg p-4 flex justify-between items-center"
-                  >
-                    <div className="flex-1">
-                      <p className="text-white font-semibold">Solicitud de Verificación</p>
-                      <p className="text-slate-400 text-sm">{solicitud.descripcion}</p>
-                      <p className={`text-xs mt-1 font-medium ${
-                        solicitud.estado === 'Aprobada' ? 'text-green-400' :
-                        solicitud.estado === 'Rechazada' ? 'text-red-400' : 'text-yellow-400'
-                      }`}>
-                        Estado: {solicitud.estado}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setModalDetalles({ visible: true, item: solicitud, tipo: 'verificacion' })}
-                        className="p-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded transition"
-                      >
-                        <FiEye size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleEliminarSolicitud(solicitud._id, 'verificacion')}
-                        className="p-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition"
-                      >
-                        <FiTrash2 size={18} />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        {tab === 'rehabilitacion' && (
-          <>
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                <MdAssignmentTurnedIn /> Solicitudes de Rehabilitación
-              </h2>
-              <button
-                onClick={() => setModalCrearSolicitud({ visible: true, tipo: 'rehabilitacion' })}
-                className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:shadow-lg transition flex items-center gap-2 text-sm"
-              >
-                <AiOutlineFileAdd size={18} />
-                Crear Solicitud
-              </button>
-            </div>
-            {loading ? (
-              <div className="text-slate-400 text-center py-8">Cargando solicitudes...</div>
-            ) : solicitudesRehabilitacion.length === 0 ? (
-              <div className="text-slate-400 text-center py-8">No hay solicitudes de rehabilitación</div>
-            ) : (
-              <div className="space-y-3">
-                {solicitudesRehabilitacion.map((solicitud) => (
-                  <motion.div
-                    key={solicitud._id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-slate-800 border border-slate-700 rounded-lg p-4 flex justify-between items-center"
-                  >
-                    <div className="flex-1">
-                      <p className="text-white font-semibold">Solicitud de Rehabilitación</p>
-                      <p className="text-slate-400 text-sm">{solicitud.descripcion}</p>
-                      <p className={`text-xs mt-1 font-medium ${
-                        solicitud.estado === 'Aprobada' ? 'text-green-400' :
-                        solicitud.estado === 'Rechazada' ? 'text-red-400' : 'text-yellow-400'
-                      }`}>
-                        Estado: {solicitud.estado}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setModalDetalles({ visible: true, item: solicitud, tipo: 'rehabilitacion' })}
-                        className="p-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded transition"
-                      >
-                        <FiEye size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleEliminarSolicitud(solicitud._id, 'rehabilitacion')}
-                        className="p-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition"
-                      >
-                        <FiTrash2 size={18} />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Modal Ver Detalles */}
+      {/* ---------------- MODAL DE DETALLES (Existente Adaptado) ---------------- */}
       {modalDetalles.visible && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-800 border border-slate-700 rounded-lg p-6 max-w-md w-full"
+            className={`bg-slate-900 border border-slate-700 rounded-2xl p-0 w-full flex flex-col overflow-hidden max-h-[90vh] shadow-2xl ${
+              modalDetalles.tipo === 'reporte' && modalDetalles.item?.meta?.publicacionId
+                ? 'max-w-4xl md:flex-row'
+                : 'max-w-lg'
+            }`}
           >
-            <h2 className="text-xl font-bold text-white mb-4">Detalles</h2>
-            <div className="space-y-3 mb-6">
-              <div>
-                <label className="text-sm font-medium text-slate-400">Tipo</label>
-                <p className="text-white">{modalDetalles.item?.tipo || 'N/A'}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-400">Descripción</label>
-                <p className="text-white">{modalDetalles.item?.descripcion || 'Sin descripción'}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-400">Estado</label>
-                <p className={`font-medium ${
-                  modalDetalles.item?.estado === 'Aprobada' ? 'text-green-400' :
-                  modalDetalles.item?.estado === 'Rechazada' ? 'text-red-400' : 'text-yellow-400'
-                }`}>
-                  {modalDetalles.item?.estado || 'Pendiente'}
-                </p>
-              </div>
-            </div>
+            {/* Layout para Reporte con Publicación (2 columnas) */}
+            {modalDetalles.tipo === 'reporte' && modalDetalles.item?.meta?.publicacionId ? (
+              <>
+                {/* Lado izquierdo: Publicación */}
+                <div className="flex-1 min-h-0 md:max-h-full md:flex-1 p-4 md:p-6 overflow-y-auto bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 relative">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-bold text-white">Contenido Reportado</h2>
+                  </div>
+                  <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
+                    {/* Publicación Header */}
+                    <div className="p-4 flex items-center gap-3">
+                      <img 
+                        src={getImageUrl(modalDetalles.item.meta.publicacionId.autorId?.fotoPerfil) || `https://ui-avatars.com/api/?name=${modalDetalles.item.meta.publicacionId.autorId?.nombre || 'User'}&background=random`}
+                        alt="Avatar Autor"
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <div>
+                        <h3 className="font-bold text-white text-sm">
+                          {modalDetalles.item.meta.publicacionId.autorId?.nombre} {modalDetalles.item.meta.publicacionId.autorId?.apellido}
+                        </h3>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          {modalDetalles.item.meta.redId?.fotoPerfil && (
+                            <img 
+                              src={getImageUrl(modalDetalles.item.meta.redId.fotoPerfil)} 
+                              alt="Avatar Red" 
+                              className="w-4 h-4 rounded-full object-cover"
+                            />
+                          )}
+                          <p className="text-xs text-slate-400">
+                            {modalDetalles.item.meta.redId?.nombre || 'Red Comunitaria'}
+                            {modalDetalles.item.meta.publicacionId.timestamp && ` • ${new Date(modalDetalles.item.meta.publicacionId.timestamp).toLocaleDateString()}`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-            {modalDetalles.tipo === 'reporte' && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleResolverReporte(modalDetalles.item._id, 'Resuelta')}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition"
-                >
-                  Marcar Resuelto
-                </button>
-                <button
-                  onClick={() => handleResolverReporte(modalDetalles.item._id, 'Rechazada')}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition"
-                >
-                  Rechazar
-                </button>
-              </div>
+                    {/* Contenido según tipo */}
+                    {modalDetalles.item.meta.publicacionId.tipoContenido === 'texto' ? (
+                      <div className="p-4 pt-0">
+                        {modalDetalles.item.meta.publicacionId.titulo && (
+                          <h4 className="text-xl font-bold text-white mb-2 break-words">
+                            {modalDetalles.item.meta.publicacionId.titulo}
+                          </h4>
+                        )}
+                        <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">
+                          {modalDetalles.item.meta.publicacionId.contenido}
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Publicación Imagen */}
+                        {modalDetalles.item.meta.publicacionId.mediaUrls?.length > 0 && (
+                          <div className="w-full bg-black/40">
+                            <img 
+                              src={getImageUrl(modalDetalles.item.meta.publicacionId.mediaUrls[0])}
+                              alt="Publicación"
+                              className="w-full h-auto object-contain max-h-[400px]"
+                            />
+                          </div>
+                        )}
+                        {/* Publicación Texto de Imagen */}
+                        <div className="p-4">
+                          <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">
+                            <span className="font-bold text-white mr-2">
+                              {modalDetalles.item.meta.publicacionId.autorId?.username || modalDetalles.item.meta.publicacionId.autorId?.nombre}
+                            </span>
+                            {modalDetalles.item.meta.publicacionId.contenido}
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Columna Derecha: Detalles y Acciones */}
+                <div className="w-full md:w-80 flex-1 md:flex-none flex flex-col bg-slate-900 relative min-h-0 md:max-h-full">
+                  <button
+                    onClick={() => setModalDetalles({ visible: false, item: null, tipo: null })}
+                    className="absolute top-4 right-4 p-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition z-10"
+                  >
+                    <FiX size={20} />
+                  </button>
+                  <div className="p-4 md:p-6 flex-1 overflow-y-auto mt-0 md:mt-4">
+                    <h2 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-4">Detalles del Reporte</h2>
+                    <div className="space-y-2 md:space-y-4">
+                      <div className="bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-700">
+                        <span className="text-[10px] md:text-xs font-medium text-slate-400 block mb-1">Tipo de reporte:</span>
+                        <span className="text-white text-xs md:text-sm font-bold">{modalDetalles.item?.tipo || 'N/A'}</span>
+                      </div>
+                      <div className="bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-700">
+                        <span className="text-[10px] md:text-xs font-medium text-slate-400 block mb-1">Estado:</span>
+                        <span className={`text-xs md:text-sm font-bold ${
+                          ['Aprobada', 'resuelto', 'Resuelta'].includes(modalDetalles.item?.estado) ? 'text-green-400' :
+                          ['Rechazada', 'rechazado'].includes(modalDetalles.item?.estado) ? 'text-red-400' : 'text-yellow-400'
+                        }`}>
+                          {modalDetalles.item?.estado || 'Pendiente'}
+                        </span>
+                      </div>
+                      <div className="bg-slate-800 p-3 md:p-4 rounded-xl border border-slate-700">
+                        <span className="text-[10px] md:text-xs font-medium text-slate-400 block mb-1 md:mb-2">Descripción del denunciante:</span>
+                        <p className="text-white text-xs md:text-sm leading-relaxed">{modalDetalles.item?.descripcion || 'Sin descripción'}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 md:p-6 border-t border-slate-800 bg-slate-900/80 shrink-0">
+                    <div className="flex flex-col gap-3">
+                      {modalDetalles.tipo === 'reporte' && (!modalDetalles.item?.estado || modalDetalles.item?.estado === 'pendiente') && (
+                        <>
+                          <p className="text-[10px] md:text-xs text-slate-400 text-center leading-tight mb-2">
+                            Se eliminará el contenido y se otorgará un strike.
+                          </p>
+                          <div className="flex flex-row md:flex-col gap-2 md:gap-3">
+                            <button
+                              onClick={() => handleResolverReporte(modalDetalles.item._id, 'Resuelta')}
+                              className="flex-1 w-full flex items-center justify-center gap-1 md:gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 md:py-3 rounded-xl transition shadow-lg shadow-green-900/20 text-xs md:text-base"
+                            >
+                              <MdCheckCircle className="w-4 h-4 md:w-5 md:h-5" /> Aceptar
+                            </button>
+                            <button
+                              onClick={() => handleResolverReporte(modalDetalles.item._id, 'Rechazada')}
+                              className="flex-1 w-full flex items-center justify-center gap-1 md:gap-2 bg-red-600 hover:bg-red-500 text-white font-bold py-2 md:py-3 rounded-xl transition shadow-lg shadow-red-900/20 text-xs md:text-base"
+                            >
+                              <MdCancel className="w-4 h-4 md:w-5 md:h-5" /> Rechazar
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              // Layout Original para Solicitudes u otros tipos (1 columna)
+              <>
+                <div className="p-6 border-b border-slate-800 relative">
+                  <button
+                    onClick={() => setModalDetalles({ visible: false, item: null, tipo: null })}
+                    className="absolute top-6 right-6 p-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition"
+                  >
+                    <FiX size={20} />
+                  </button>
+                  <h2 className="text-2xl font-bold text-white mb-6">Detalles de Solicitud</h2>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center bg-slate-800 p-4 rounded-xl border border-slate-700">
+                      <span className="text-sm font-medium text-slate-400">Tipo:</span>
+                      <span className="text-white text-sm font-bold">{modalDetalles.item?.tipo || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between items-center bg-slate-800 p-4 rounded-xl border border-slate-700">
+                      <span className="text-sm font-medium text-slate-400">Estado:</span>
+                      <span className={`text-sm font-bold ${
+                        ['Aprobada', 'resuelto', 'Resuelta'].includes(modalDetalles.item?.estado) ? 'text-green-400' :
+                        ['Rechazada', 'rechazado'].includes(modalDetalles.item?.estado) ? 'text-red-400' : 'text-yellow-400'
+                      }`}>
+                        {modalDetalles.item?.estado || 'Pendiente'}
+                      </span>
+                    </div>
+                    <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                      <span className="text-sm font-medium text-slate-400 block mb-2">Descripción:</span>
+                      <p className="text-white text-sm leading-relaxed">{modalDetalles.item?.descripcion || 'Sin descripción'}</p>
+                    </div>
+                    {modalDetalles.tipo === 'reporte' && modalDetalles.item?.subtype === 'publicacion' && !modalDetalles.item?.meta?.publicacionId && (
+                      <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-xl p-4">
+                        <p className="text-yellow-200 text-sm flex items-center gap-2">
+                          <MdWarning size={20} /> La publicación original ya no existe o fue eliminada.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Acciones para otros tipos de solicitudes si es necesario (el código original no mostraba acciones para 'verificacion' o 'rehabilitacion' en el modal, solo visualizar) */}
+              </>
             )}
-
-            <button
-              onClick={() => setModalDetalles({ visible: false, item: null, tipo: null })}
-              className="w-full mt-4 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg transition"
-            >
-              Cerrar
-            </button>
           </motion.div>
         </div>
       )}
 
-      {/* Modal Crear Solicitud */}
-      {modalCrearSolicitud.visible && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-800 border border-slate-700 rounded-lg p-6 max-w-md w-full"
-          >
-            <h2 className="text-xl font-bold text-white mb-4">
-              {modalCrearSolicitud.tipo === 'verificacion' 
-                ? 'Solicitar Verificación de Red'
-                : 'Solicitar Rehabilitación de Red'}
-            </h2>
-            <textarea
-              value={descriptionSolicitud}
-              onChange={(e) => setDescriptionSolicitud(e.target.value)}
-              placeholder="Describe tu solicitud..."
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition mb-4"
-              rows="4"
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={() => modalCrearSolicitud.tipo === 'verificacion'
-                  ? handleCrearSolicitudVerificacion()
-                  : handleCrearSolicitudRehabilitacion()
-                }
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:shadow-lg transition"
-              >
-                Enviar
-              </button>
-              <button
-                onClick={() => {
-                  setModalCrearSolicitud({ visible: false, tipo: null });
-                  setDescriptionSolicitud("");
-                }}
-                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg transition"
-              >
-                Cancelar
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
-    </motion.div>
+    </div>
   );
 };
 

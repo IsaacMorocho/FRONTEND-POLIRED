@@ -218,7 +218,7 @@ const Masonry = ({
 
   return (
     <>
-      <div ref={containerRef} className="relative w-full" style={{ height: Math.max(...(grid.map(item => item.y + item.h) || [0])) }}>
+      <div ref={containerRef} className="relative w-full" style={{ height: Math.max(0, ...grid.map(item => item.y + item.h)) }}>
         {grid.map(item => (
           <div
             key={item.id}
@@ -247,7 +247,7 @@ const Masonry = ({
       {/* Modal para imagen completa */}
       {selectedImage && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 backdrop-blur-md bg-black/50"
+          className="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-8 backdrop-blur-md bg-black/80"
           onClick={() => {
             setSelectedImage(null);
             document.body.style.overflow = 'unset';
@@ -267,7 +267,7 @@ const Masonry = ({
                 setSelectedImage(null);
                 document.body.style.overflow = 'unset';
               }}
-              className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl transition-colors"
+              className="absolute top-0 right-0 sm:-top-4 sm:-right-4 bg-slate-800/80 hover:bg-slate-700 border border-white/20 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-xl shadow-xl transition-all z-10"
             >
               ✕
             </button>

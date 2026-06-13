@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import useFetch from '../hooks/useFetch';
 import { useForm } from 'react-hook-form';
+import authService from '../services/authService';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
@@ -10,7 +10,6 @@ export const Forgot = () => {
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const { register, handleSubmit, formState: { errors }, watch } = useForm({ mode: 'onBlur' });
-  const { fetchDataBackend } = useFetch();
 
   const email = watch('email');
 
@@ -24,11 +23,7 @@ export const Forgot = () => {
 
     setLoading(true);
     try {
-      await fetchDataBackend(
-        `${import.meta.env.VITE_BACKEND_URL}/recuperar-password`,
-        { email: emailTrimmed },
-        'POST'
-      );
+      await authService.recuperarPasswordSuperAdmin(emailTrimmed);
       toast.success('Revisa tu correo. Se ha enviado un enlace de recuperación.');
       setEmailSent(true);
     } catch (error) {

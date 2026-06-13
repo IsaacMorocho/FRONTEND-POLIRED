@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
-import useFetch from '../hooks/useFetch';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import authService from '../services/authService';
 import { useForm } from 'react-hook-form';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { motion } from 'framer-motion';
@@ -17,7 +17,6 @@ const COMMON_PASSWORDS = new Set([
 ]);
 
 const RecuperarPassword = () => {
-  const { fetchDataBackend } = useFetch();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
@@ -37,6 +36,16 @@ const RecuperarPassword = () => {
   } = useForm({ mode: 'onBlur' });
 
   useEffect(() => {
+    const verifyToken = async () => {
+      try {
+        await authService.verifyResetToken(token);
+        setStep('reset');
+      } catch {
+        toast.error('Token inválido o expirado');
+        setStep('invalid');
+      }
+    };
+
     if (!token) {
       setStep('invalid');
       toast.error('Token no proporcionado');
@@ -51,20 +60,6 @@ const RecuperarPassword = () => {
     verifyToken();
   }, [token, isDev]);
 
-  const verifyToken = async () => {
-    try {
-      await fetchDataBackend(
-        `${import.meta.env.VITE_BACKEND_URL}/recuperar-password/${token}`,
-        null,
-        'GET'
-      );
-      setStep('reset');
-    } catch (error) {
-      toast.error('Token inválido o expirado');
-      setStep('invalid');
-    }
-  };
-
   const changePassword = async (data) => {
     const password = data.password?.trim();
     const conf = data.confirmpassword?.trim();
@@ -77,11 +72,7 @@ const RecuperarPassword = () => {
 
     setLoading(true);
     try {
-      await fetchDataBackend(
-        `${import.meta.env.VITE_BACKEND_URL}/nuevo-password/${token}`,
-        { password, confirmpassword: conf },
-        'POST'
-      );
+      await authService.resetPassword(token, { password, confirmpassword: conf });
       toast.success('Contraseña actualizada correctamente');
       setStep('success');
       setTimeout(() => {

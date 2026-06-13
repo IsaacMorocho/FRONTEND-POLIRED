@@ -1,149 +1,60 @@
-import { useContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { FiEdit, FiTrash2, FiEye } from "react-icons/fi";
-import { MdVerifiedUser, MdPendingActions } from "react-icons/md";
-import axios from "axios";
-import { AuthContext } from "../../layout/AuthContext";
+import { useEffect, useState } from "react";
+import { FiX, FiUsers, FiFileText, FiGlobe } from "react-icons/fi";
+import { MdVerifiedUser } from "react-icons/md";
 import { motion } from 'framer-motion';
+import { AlertTriangle } from 'lucide-react';
+import superadminService from "../../services/superadminService";
+import StrikesModal from "../strikes/StrikesModal";
 
 const RedesPanelAdmin = () => {
   const [redes, setRedes] = useState([]);
-  const [solicitudes, setSolicitudes] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState('redes');
   const [modalVer, setModalVer] = useState({ visible: false, red: null });
-  const [modalActualizar, setModalActualizar] = useState({ visible: false, red: null });
-  const { token: contextToken } = useContext(AuthContext);
-  const token = contextToken || sessionStorage.getItem("token");
+  const [modalAdmin, setModalAdmin] = useState({ visible: false, admin: null });
+  const [strikesModal, setStrikesModal] = useState(null);
 
-  const API_BASE = import.meta.env.VITE_BACKEND_URL;
+  const [filtroEstado, setFiltroEstado] = useState('todos');
+
+  // Paginación y Filtrado
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 8;
+
+  const redesFiltradas = redes.filter(red => {
+    if (filtroEstado === 'todos') return true;
+    return red.estadoAprobacion === filtroEstado;
+  });
+
+  const totalPaginas = Math.ceil(redesFiltradas.length / itemsPorPagina);
+  const redesPaginadas = redesFiltradas.slice((paginaActual - 1) * itemsPorPagina, paginaActual * itemsPorPagina);
+
+  const getRedPicUrl = (red) => {
+    const profilePic = red?.fotoPerfil;
+    if (!profilePic || profilePic === 'null' || profilePic === 'undefined') {
+      return `https://ui-avatars.com/api/?name=${red?.nombre || 'Red'}&background=random`;
+    }
+    const path = profilePic;
+    if (path.startsWith('http') || path.startsWith('data:')) return path;
+    const cleanPath = path.replace(/\\/g, '/');
+    const base = import.meta.env.VITE_BACKEND_URL || '';
+    const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
+    return `${cleanBase}${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
+  };
 
   const fetchRedes = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/redes`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setRedes(res.data);
-      toast.success("Redes cargadas");
+      const data = await superadminService.getRedes();
+      setRedes(Array.isArray(data) ? data : data.redes || []);
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al cargar");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchSolicitudes = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${API_BASE}/redes/solicitudes`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSolicitudes(Array.isArray(res.data) ? res.data : res.data.solicitudes || []);
-      toast.success("Solicitudes cargadas");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al cargar");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSolicitudesRehabilitacion = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${API_BASE}/redes/rehabilitar/solicitudes`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSolicitudes(Array.isArray(res.data) ? res.data : res.data.solicitudes || []);
-      toast.success("Solicitudes de rehabilitación cargadas");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al cargar");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleActualizar = async (id, datos) => {
-    try {
-      const res = await axios.patch(`${API_BASE}/actualizar-red/${id}`, datos, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setRedes(redes.map(r => r._id === id ? res.data : r));
-      setModalActualizar({ visible: false, red: null });
-      toast.success("Actualizado");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al actualizar");
-    }
-  };
-
-  const handleEliminar = async (id) => {
-    if (!window.confirm("¿Eliminar red?")) return;
-    try {
-      await axios.delete(`${API_BASE}/eliminar-red/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setRedes(redes.filter(r => r._id !== id));
-      toast.success("Eliminada");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al eliminar");
-    }
-  };
-
-  const handleVerificar = async (id, verificada) => {
-    try {
-      const res = await axios.patch(`${API_BASE}/red/${id}/verificada`, { verificada: !verificada }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setRedes(redes.map(r => r._id === id ? { ...r, verificada: !verificada } : r));
-      toast.success(verificada ? "Desverificada" : "Verificada");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al verificar");
-    }
-  };
-
-  const handleResolverSolicitud = async (id, estado) => {
-    try {
-      await axios.patch(`${API_BASE}/redes/solicitudes/${id}/resolver`, { estado }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSolicitudes(solicitudes.filter(s => s._id !== id));
-      toast.success(`Solicitud ${estado}`);
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al resolver");
-    }
-  };
-
-  const handleResolverRehabilitacion = async (id, estado) => {
-    try {
-      await axios.patch(`${API_BASE}/redes/rehabilitar/solicitudes/${id}/resolver`, { estado }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSolicitudes(solicitudes.filter(s => s._id !== id));
-      toast.success(`Solicitud ${estado}`);
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al resolver");
     }
   };
 
   useEffect(() => {
-    if (tab === 'redes') fetchRedes();
-    else if (tab === 'solicitudes') fetchSolicitudes();
-    else if (tab === 'rehabilitacion') fetchSolicitudesRehabilitacion();
-  }, [tab]);
-
-  const tabs = [
-    { key: 'redes', label: 'Redes', icon: MdVerifiedUser },
-    { key: 'solicitudes', label: 'Verificación', icon: MdPendingActions },
-    { key: 'rehabilitacion', label: 'Rehabilitación', icon: MdPendingActions },
-  ];
+    fetchRedes();
+  }, []);
 
   return (
     <motion.div
@@ -152,29 +63,27 @@ const RedesPanelAdmin = () => {
       className="space-y-6"
     >
       {/* Encabezado */}
-      <div>
-        <h1 style={{ fontFamily: 'Lora, serif' }} className="text-3xl font-bold text-white mb-2">
-          Redes Comunitarias
-        </h1>
-        <p className="text-slate-400">Administra redes comunitarias del sistema</p>
-      </div>
-
-      {/* Pestañas */}
-      <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-4">
-        <div className="flex gap-2 flex-wrap">
-          {tabs.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`px-4 py-2 rounded-lg transition text-sm font-medium ${
-                tab === key
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                  : 'bg-slate-700/50 text-slate-300 hover:text-white'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Redes Comunitarias
+          </h1>
+          <p className="text-slate-400">Administra redes comunitarias del sistema</p>
+        </div>
+        
+        <div>
+          <select
+            value={filtroEstado}
+            onChange={(e) => {
+              setFiltroEstado(e.target.value);
+              setPaginaActual(1);
+            }}
+            className="bg-slate-800 border border-slate-700 text-slate-300 text-sm font-medium rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block w-full sm:w-auto p-3 outline-none transition shadow-lg cursor-pointer hover:border-slate-500"
+          >
+            <option value="todos">Todas las Redes</option>
+            <option value="pendiente">Solo Pendientes</option>
+            <option value="aprobada">Solo Aprobadas</option>
+          </select>
         </div>
       </div>
 
@@ -185,286 +94,349 @@ const RedesPanelAdmin = () => {
         </div>
       ) : (
         <>
-          {/* Tab Redes */}
-          {tab === 'redes' && (
-            <div className="bg-slate-800/30 backdrop-blur border border-slate-700 rounded-lg overflow-hidden">
-              {redes.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-slate-400">No hay redes registradas</p>
+          <div className="w-full">
+              {redesFiltradas.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center py-20">
+                  <div className="text-slate-500 text-lg flex flex-col items-center gap-3">
+                    <FiGlobe size={48} className="text-slate-600" />
+                    <p>
+                      {redes.length === 0 
+                        ? 'No hay redes registradas' 
+                        : 'No se encontraron resultados para los filtros aplicados'}
+                    </p>
+                  </div>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-slate-800/50 border-b border-slate-700">
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300">Nombre</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300">Miembros</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300">Estado</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300">Verificada</th>
-                        <th className="px-4 py-3 text-center text-xs font-semibold text-slate-300">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {redes.map((red, idx) => (
-                        <motion.tr
-                          key={red._id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: idx * 0.05 }}
-                          className="border-b border-slate-700 hover:bg-slate-700/20 transition"
-                        >
-                          <td className="px-4 py-3">
-                            <p className="text-white font-medium">{red.nombre}</p>
-                          </td>
-                          <td className="px-4 py-3 text-slate-400">{red.cantidadMiembros || 0}</td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                              red.deshabilitada 
-                                ? 'bg-red-900/30 text-red-300' 
-                                : 'bg-green-900/30 text-green-300'
-                            }`}>
-                              {red.deshabilitada ? 'Deshabilitada' : 'Habilitada'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                              red.verificada 
-                                ? 'bg-blue-900/30 text-blue-300' 
-                                : 'bg-yellow-900/30 text-yellow-300'
-                            }`}>
-                              {red.verificada ? 'Verificada' : 'Pendiente'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex justify-center gap-2">
-                              <button
-                                onClick={() => setModalVer({ visible: true, red })}
-                                className="p-2 text-blue-400 hover:bg-blue-900/30 rounded transition"
-                                title="Ver"
-                              >
-                                <FiEye size={18} />
-                              </button>
-                              <button
-                                onClick={() => setModalActualizar({ visible: true, red })}
-                                className="p-2 text-yellow-400 hover:bg-yellow-900/30 rounded transition"
-                                title="Editar"
-                              >
-                                <FiEdit size={18} />
-                              </button>
-                              <button
-                                onClick={() => handleVerificar(red._id, red.verificada)}
-                                className="p-2 text-purple-400 hover:bg-purple-900/30 rounded transition"
-                                title={red.verificada ? "Desverificar" : "Verificar"}
-                              >
-                                <MdVerifiedUser size={18} />
-                              </button>
-                              <button
-                                onClick={() => handleEliminar(red._id)}
-                                className="p-2 text-red-400 hover:bg-red-900/30 rounded transition"
-                                title="Eliminar"
-                              >
-                                <FiTrash2 size={18} />
-                              </button>
+                <div className="w-full">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-2">
+                    {redesPaginadas.map((red, idx) => (
+                      <motion.div
+                        key={red._id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: idx * 0.05 }}
+                        onClick={() => setModalVer({ visible: true, red })}
+                        className="bg-slate-800/80 rounded-2xl border border-slate-700 hover:border-slate-500 overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-emerald-900/10 group flex flex-col"
+                      >
+                        <div className="p-6 flex flex-col items-center relative flex-1">
+                          <div className="relative mb-4">
+                            <img 
+                              src={getRedPicUrl(red)}
+                              alt={red.nombre}
+                              className="w-24 h-24 rounded-full object-cover border-4 border-slate-700 group-hover:border-slate-500 transition-colors"
+                            />
+                            {(red.esVerificada || red.esOficial) && (
+                              <div className="absolute bottom-0 right-0 bg-slate-900 rounded-full p-1 shadow-lg border border-slate-700">
+                                <MdVerifiedUser size={20} className={red.esOficial ? "text-yellow-400" : "text-blue-500"} />
+                              </div>
+                            )}
+                          </div>
+                          <h3 className="text-lg font-bold text-white text-center line-clamp-2 mb-2 group-hover:text-emerald-400 transition-colors">{red.nombre}</h3>
+                          
+                          {!red.esGlobal && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setStrikesModal({ tipo: 'red', id: red._id, nombre: red.nombre }); }}
+                              className="text-yellow-400 hover:text-yellow-300 text-xs flex items-center justify-center gap-1 mb-2 bg-slate-900/50 px-2 py-1 rounded-full border border-yellow-900/50"
+                              title="Ver strikes"
+                            >
+                              <AlertTriangle size={14} />
+                              Strikes: {red.strikes?.length ?? 0}
+                            </button>
+                          )}
+
+                          <div className="mt-auto pt-4 w-full border-t border-slate-700/50 flex flex-col gap-3">
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-slate-400 flex items-center gap-1"><FiUsers size={16} /> Miembros</span>
+                              <span className="text-white font-semibold">{red.cantidadMiembros || 0}</span>
                             </div>
-                          </td>
-                        </motion.tr>
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-slate-400 flex items-center gap-1"><FiFileText size={16} /> Publicaciones</span>
+                              <span className="text-white font-semibold">{red.cantidadPublicaciones || 0}</span>
+                            </div>
+                            
+                            <div className="mt-2 flex justify-center">
+                              {red.estadoAprobacion === 'aprobada' ? (
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                  red.deshabilitada 
+                                    ? 'bg-red-900/30 text-red-300 border border-red-800/50' 
+                                    : 'bg-emerald-900/30 text-emerald-300 border border-emerald-800/50'
+                                }`}>
+                                  {red.deshabilitada ? 'Deshabilitada' : 'Habilitada'}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-900/30 text-orange-300 border border-orange-800/50">
+                                  Pendiente
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+              {/* Paginación */}
+              {redesFiltradas.length > 0 && (
+                <div className="flex flex-col sm:flex-row justify-between items-center mt-6 p-2 gap-4">
+                  <div className="flex items-center gap-2 text-sm text-slate-400">
+                    <span>Mostrando Resultados:</span>
+                    <span className="px-3 py-1 bg-slate-800 rounded-full text-slate-300 font-medium border border-slate-700">
+                      {(paginaActual - 1) * itemsPorPagina + 1} - {Math.min(paginaActual * itemsPorPagina, redesFiltradas.length)} de {redesFiltradas.length}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-4 sm:gap-6">
+                    <button
+                      onClick={() => setPaginaActual(p => Math.max(1, p - 1))}
+                      disabled={paginaActual === 1}
+                      className="flex items-center gap-1 text-sm font-medium text-slate-400 hover:text-white disabled:opacity-50 disabled:hover:text-slate-400 transition"
+                    >
+                      Anterior
+                    </button>
+                    
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: totalPaginas || 1 }, (_, i) => i + 1).map(pageNum => (
+                        <button
+                          key={pageNum}
+                          onClick={() => setPaginaActual(pageNum)}
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition ${
+                            paginaActual === pageNum 
+                              ? 'bg-blue-600 text-white' 
+                              : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Tab Solicitudes de Verificación */}
-          {tab === 'solicitudes' && (
-            <div className="space-y-3">
-              {solicitudes.length === 0 ? (
-                <div className="text-center py-12 bg-slate-800/30 backdrop-blur border border-slate-700 rounded-lg">
-                  <p className="text-slate-400">No hay solicitudes pendientes</p>
-                </div>
-              ) : (
-                solicitudes.map((solicitud, idx) => (
-                  <motion.div
-                    key={solicitud._id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="bg-slate-800/30 backdrop-blur border border-slate-700 rounded-lg p-4"
-                  >
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <div>
-                        <h3 className="text-white font-semibold">{solicitud.redId?.nombre}</h3>
-                        <p className="text-sm text-slate-400 mt-1">{solicitud.descripcion}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleResolverSolicitud(solicitud._id, 'Aprobada')}
-                          className="px-4 py-2 bg-green-600/80 hover:bg-green-700 text-white rounded-lg text-sm transition"
-                        >
-                          Aprobar
-                        </button>
-                        <button
-                          onClick={() => handleResolverSolicitud(solicitud._id, 'Rechazada')}
-                          className="px-4 py-2 bg-red-600/80 hover:bg-red-700 text-white rounded-lg text-sm transition"
-                        >
-                          Rechazar
-                        </button>
-                      </div>
                     </div>
-                  </motion.div>
-                ))
-              )}
-            </div>
-          )}
 
-          {/* Tab Solicitudes de Rehabilitación */}
-          {tab === 'rehabilitacion' && (
-            <div className="space-y-3">
-              {solicitudes.length === 0 ? (
-                <div className="text-center py-12 bg-slate-800/30 backdrop-blur border border-slate-700 rounded-lg">
-                  <p className="text-slate-400">No hay solicitudes pendientes</p>
+                    <button
+                      onClick={() => setPaginaActual(p => Math.min(totalPaginas || 1, p + 1))}
+                      disabled={paginaActual === (totalPaginas || 1)}
+                      className="flex items-center gap-1 text-sm font-medium text-slate-400 hover:text-white disabled:opacity-50 disabled:hover:text-slate-400 transition"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                solicitudes.map((solicitud, idx) => (
-                  <motion.div
-                    key={solicitud._id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="bg-slate-800/30 backdrop-blur border border-slate-700 rounded-lg p-4"
-                  >
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <div>
-                        <h3 className="text-white font-semibold">{solicitud.redId?.nombre}</h3>
-                        <p className="text-sm text-slate-400 mt-1">Razón: {solicitud.razon}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleResolverRehabilitacion(solicitud._id, 'Aprobada')}
-                          className="px-4 py-2 bg-green-600/80 hover:bg-green-700 text-white rounded-lg text-sm transition"
-                        >
-                          Aprobar
-                        </button>
-                        <button
-                          onClick={() => handleResolverRehabilitacion(solicitud._id, 'Rechazada')}
-                          className="px-4 py-2 bg-red-600/80 hover:bg-red-700 text-white rounded-lg text-sm transition"
-                        >
-                          Rechazar
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))
+              )}
+                </div>
               )}
             </div>
-          )}
+
         </>
       )}
 
       {/* Modal Ver Red */}
-      {modalVer.visible && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      {modalVer.visible && modalVer.red && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-800 border border-slate-700 rounded-lg p-6 max-w-2xl w-full max-h-96 overflow-y-auto"
+            className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col shadow-2xl"
           >
-            <h2 className="text-2xl font-bold text-white mb-2">{modalVer.red?.nombre}</h2>
-            <p className="text-slate-400 mb-4">{modalVer.red?.descripcion}</p>
-            <div>
-              <h3 className="font-semibold text-white mb-3">Miembros ({modalVer.red?.miembros?.length || 0})</h3>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {modalVer.red?.miembros?.map(m => (
-                  <div key={m._id} className="text-sm text-slate-300 border-l-2 border-blue-500 pl-3">
-                    {m.nombre} {m.apellido}
-                  </div>
-                ))}
+            {/* Header / Cover */}
+            <div className="relative h-20 bg-gradient-to-r from-blue-900/50 to-purple-900/50 flex shrink-0">
+              <button
+                onClick={() => setModalVer({ visible: false, red: null })}
+                className="absolute top-4 right-4 p-2 bg-slate-900/50 hover:bg-slate-900 text-white rounded-full transition z-10"
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+            
+            <div className="px-6 pb-4 relative flex-1 flex flex-col">
+              {/* Profile Image & Name */}
+              <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-end -mt-10 sm:-mt-12 mb-4">
+                <div className="relative shrink-0">
+                  <img 
+                    src={getRedPicUrl(modalVer.red)} 
+                    alt={modalVer.red.nombre} 
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-slate-900 object-cover shadow-lg"
+                  />
+                  {(modalVer.red.esVerificada || modalVer.red.esOficial) && (
+                    <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-slate-900 rounded-full p-1 shadow-lg border border-slate-700">
+                      <MdVerifiedUser size={24} className={modalVer.red.esOficial ? "text-yellow-400" : "text-blue-500"} />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 text-center sm:text-left mt-2 sm:mt-0">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white leading-tight">{modalVer.red.nombre}</h2>
+                  <p className="text-slate-400 text-sm mt-1">Creada el {new Date(modalVer.red.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              {/* Badges */}
+              <div className="flex flex-wrap gap-2 mb-4 justify-center sm:justify-start">
+                {modalVer.red.estadoAprobacion === 'aprobada' && (
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
+                    modalVer.red.deshabilitada ? 'bg-red-900/50 text-red-300 border border-red-800' : 'bg-green-900/50 text-green-300 border border-green-800'
+                  }`}>
+                    {modalVer.red.deshabilitada ? 'Deshabilitada' : 'Habilitada'}
+                  </span>
+                )}
+                
+                {modalVer.red.esVerificada && (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold shadow-sm bg-blue-900/50 text-blue-300 border border-blue-800 flex items-center gap-1">
+                    <MdVerifiedUser size={14} /> Verificada
+                  </span>
+                )}
+                
+                {modalVer.red.esOficial && (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold shadow-sm bg-purple-900/50 text-purple-300 border border-purple-800 flex items-center gap-1">
+                    <MdVerifiedUser size={14} /> Oficial
+                  </span>
+                )}
+                
+                {modalVer.red.esGlobal && (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold shadow-sm bg-yellow-900/50 text-yellow-300 border border-yellow-800">
+                    Red Global
+                  </span>
+                )}
+                
+                {modalVer.red.estadoAprobacion === 'pendiente' && (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold shadow-sm bg-orange-900/50 text-orange-300 border border-orange-800">
+                    Estado: PENDIENTE
+                  </span>
+                )}
+                {modalVer.red.estadoAprobacion === 'aprobada' && (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold shadow-sm bg-emerald-900/50 text-emerald-300 border border-emerald-800">
+                    Estado: APROBADA
+                  </span>
+                )}
+                {!modalVer.red.estadoAprobacion && (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold shadow-sm bg-slate-800 text-slate-300 border border-slate-700">
+                    Estado: N/A
+                  </span>
+                )}
+              </div>
+
+              {/* Data grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 col-span-1 md:col-span-2">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">Descripción</span>
+                  <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{modalVer.red.descripcion || 'Sin descripción'}</p>
+                </div>
+                
+                <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 col-span-1 md:col-span-2">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">Propósito</span>
+                  <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{modalVer.red.proposito || 'Sin propósito especificado'}</p>
+                </div>
+                
+                <div 
+                  className={`bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 col-span-1 md:col-span-2 ${modalVer.red.administrador ? 'cursor-pointer hover:bg-slate-700/50 transition' : ''}`}
+                  onClick={() => modalVer.red.administrador && setModalAdmin({ visible: true, admin: modalVer.red.administrador })}
+                >
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">Administrador / Dueño</span>
+                  {modalVer.red.administrador ? (
+                    <div className="flex items-center gap-3 mt-1">
+                      <div className="w-10 h-10 rounded-full bg-emerald-900/50 border border-emerald-800 flex items-center justify-center text-emerald-300 font-bold uppercase overflow-hidden shrink-0">
+                        {modalVer.red.administrador.fotoPerfil ? (
+                          <img src={modalVer.red.administrador.fotoPerfil} alt={modalVer.red.administrador.nombre} className="w-full h-full object-cover" />
+                        ) : (
+                          modalVer.red.administrador.nombre?.charAt(0) || '?'
+                        )}
+                      </div>
+                      <div className="overflow-hidden">
+                        <p className="text-white text-sm font-semibold truncate">{modalVer.red.administrador.nombre} {modalVer.red.administrador.apellido}</p>
+                        <p className="text-slate-400 text-xs truncate">{modalVer.red.administrador.email}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 text-sm italic">Esta red no tiene un administrador asignado.</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 flex flex-col sm:flex-row justify-around items-center text-center gap-4 mt-auto">
+                <div className="flex flex-col items-center">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Total Miembros</span>
+                  <span className="text-2xl font-bold text-white">{modalVer.red.cantidadMiembros || 0}</span>
+                </div>
+                <div className="hidden sm:block w-px h-10 bg-slate-700/50"></div>
+                <div className="flex flex-col items-center">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Total Publicaciones</span>
+                  <span className="text-2xl font-bold text-white">{modalVer.red.cantidadPublicaciones || 0}</span>
+                </div>
               </div>
             </div>
-            <button
-              onClick={() => setModalVer({ visible: false, red: null })}
-              className="w-full mt-4 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg transition"
-            >
-              Cerrar
-            </button>
           </motion.div>
         </div>
       )}
 
-      {/* Modal Actualizar Red */}
-      {modalActualizar.visible && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      {/* Modal Perfil Admin */}
+      {modalAdmin.visible && modalAdmin.admin && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-800 border border-slate-700 rounded-lg p-6 max-w-md w-full"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative flex flex-col"
           >
-            <h2 className="text-2xl font-bold text-white mb-4">Actualizar Red</h2>
-            <ActualizarRedForm
-              red={modalActualizar.red}
-              onSubmit={handleActualizar}
-              onCancel={() => setModalActualizar({ visible: false, red: null })}
-            />
+            {/* Header / Cover */}
+            <div className="h-24 bg-gradient-to-r from-blue-600/50 to-emerald-600/50 relative">
+              <button 
+                onClick={() => setModalAdmin({ visible: false, admin: null })}
+                className="absolute top-4 right-4 p-2 bg-slate-900/50 hover:bg-slate-900 text-white rounded-full transition z-10"
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+            
+            <div className="px-6 pb-6 relative flex flex-col items-center -mt-12">
+              {/* Profile Image */}
+              <div className="relative mb-4">
+                <div className="w-24 h-24 rounded-full border-4 border-slate-800 bg-slate-700 flex items-center justify-center text-3xl font-bold text-white overflow-hidden shadow-lg">
+                  {modalAdmin.admin.fotoPerfil ? (
+                    <img src={modalAdmin.admin.fotoPerfil} alt={modalAdmin.admin.nombre} className="w-full h-full object-cover" />
+                  ) : (
+                    modalAdmin.admin.nombre?.charAt(0) || '?'
+                  )}
+                </div>
+              </div>
+              
+              <h2 className="text-2xl font-bold text-white text-center">
+                {modalAdmin.admin.nombre} {modalAdmin.admin.apellido}
+              </h2>
+              <p className="text-blue-400 text-sm font-medium mb-1">
+                @{modalAdmin.admin.username || 'usuario'}
+              </p>
+              
+              <div className="flex gap-2 mt-2 mb-4">
+                <span className={`px-2 py-1 rounded text-xs font-bold ${modalAdmin.admin.status ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
+                  {modalAdmin.admin.status ? 'Activo' : 'Inactivo'}
+                </span>
+                {modalAdmin.admin.suspendido && (
+                  <span className="px-2 py-1 rounded text-xs font-bold bg-red-900/50 text-red-400">Suspendido</span>
+                )}
+              </div>
+
+              <div className="w-full bg-slate-900/50 rounded-xl p-4 border border-slate-700/50 mt-2 space-y-3">
+                <div>
+                  <span className="text-xs text-slate-500 uppercase font-semibold block">Email</span>
+                  <p className="text-slate-300 text-sm break-all">{modalAdmin.admin.email}</p>
+                </div>
+                
+                <div>
+                  <span className="text-xs text-slate-500 uppercase font-semibold block">Biografía</span>
+                  <p className="text-slate-300 text-sm">
+                    {modalAdmin.admin.biografia || <span className="italic text-slate-500">Sin biografía</span>}
+                  </p>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
+      )}
+
+      {strikesModal && (
+        <StrikesModal
+          entidadTipo={strikesModal.tipo}
+          entidadId={strikesModal.id}
+          entidadNombre={strikesModal.nombre}
+          onClose={() => setStrikesModal(null)}
+        />
       )}
     </motion.div>
-  );
-};
-
-const ActualizarRedForm = ({ red, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
-    nombre: red?.nombre || '',
-    descripcion: red?.descripcion || '',
-    deshabilitada: red?.deshabilitada || false
-  });
-
-  return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(red._id, formData); }} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">Nombre</label>
-        <input
-          type="text"
-          value={formData.nombre}
-          onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500 transition"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">Descripción</label>
-        <textarea
-          value={formData.descripcion}
-          onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500 transition"
-          rows="3"
-        />
-      </div>
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={formData.deshabilitada}
-          onChange={(e) => setFormData({ ...formData, deshabilitada: e.target.checked })}
-          className="w-4 h-4 rounded"
-        />
-        <label className="text-sm text-slate-300">Deshabilitar red</label>
-      </div>
-      <div className="flex gap-2 pt-2">
-        <button
-          type="submit"
-          className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:shadow-lg transition"
-        >
-          Guardar
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="flex-1 bg-slate-700 text-white py-2 rounded-lg hover:bg-slate-600 transition"
-        >
-          Cancelar
-        </button>
-      </div>
-    </form>
   );
 };
 

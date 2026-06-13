@@ -1,63 +1,87 @@
-import { useState, useEffect, useContext, useMemo } from "react";
-import axios from "axios";
+import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../layout/AuthContext";
 import { toast } from "react-toastify";
+import { FiEdit2, FiSave, FiX, FiUsers, FiFileText, FiInfo, FiAlertTriangle } from "react-icons/fi";
+import { MdVerifiedUser } from "react-icons/md";
 import { motion } from 'framer-motion';
-
-const NAME_MIN = 2;
-const NAME_MAX = 60;
-const DESC_MIN = 10;
-const DESC_MAX = 1000;
-
-const normalizeSpaces = (s = "") => s.replace(/\s+/g, " ").trim();
-
-const validateNombre = (value) => {
-  const v = normalizeSpaces(value);
-  if (v.length < NAME_MIN) {
-    toast.error(`El nombre debe tener al menos ${NAME_MIN} caracteres.`, { autoClose: 3000 });
-    return false;
-  }
-  if (v.length > NAME_MAX) {
-    toast.error(`El nombre no puede superar ${NAME_MAX} caracteres.`, { autoClose: 3000 });
-    return false;
-  }
-  return true;
-};
-
-const validateDescripcion = (value) => {
-  const v = normalizeSpaces(value);
-  if (v.length < DESC_MIN) {
-    toast.error(`La descripción debe tener al menos ${DESC_MIN} caracteres.`, { autoClose: 3000 });
-    return false;
-  }
-  if (v.length > DESC_MAX) {
-    toast.error(`La descripción no puede superar ${DESC_MAX} caracteres.`, { autoClose: 3000 });
-    return false;
-  }
-  return true;
-};
+import adminRedService from "../../services/adminRedService";
+import { compressImage } from "../../utils/imageCompression";
 
 const RedesC_Panel_AR = () => {
-  const { token } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [red, setRed] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({ nombre: "", descripcion: "" });
+  const [imagen, setImagen] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const API_BASE = import.meta.env.VITE_BACKEND_URL;
 
-  const [nombre, setNombre] = useState("");
-  const [descripcion, setDescripcion] = useState("");
+  const getImageUrl = (path) => {
+    if (!path || path === 'null' || path === 'undefined') return null;
+    if (path.startsWith('http') || path.startsWith('data:')) return path;
+    const cleanPath = path.replace(/\\/g, '/');
+    const base = API_BASE?.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
+    return `${base}${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
+  };
 
-  const [touched, setTouched] = useState({ nombre: false, descripcion: false });
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setFormData({
+      nombre: red.nombre || "",
+      descripcion: red.descripcion || "",
+    });
+    setPreview(null);
+    setImagen(null);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setPreview(null);
+    setImagen(null);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagen(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const data = new FormData();
+      data.append('nombre', formData.nombre);
+      data.append('descripcion', formData.descripcion);
+      if (imagen) {
+        const compressedImagen = await compressImage(imagen);
+        data.append('imagen', compressedImagen);
+      }
+      
+      const response = await adminRedService.updateRed(data, true);
+      setRed(response.red);
+      setIsEditing(false);
+      toast.success("Red comunitaria actualizada correctamente");
+    } catch (error) {
+      toast.error(error.response?.data?.msg || "Error al actualizar la red");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   useEffect(() => {
     const fetchRed = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/red/admin/informacion`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setRed(res.data.red);
-        setNombre(res.data.red.nombre || "");
-        setDescripcion(res.data.red.descripcion || "");
+        const data = await adminRedService.getInfoRed();
+        setRed(data.red);
       } catch (error) {
         console.error("Error al obtener la red:", error);
         toast.error("Error al cargar la información de la red", { autoClose: 3000 });
@@ -66,70 +90,9 @@ const RedesC_Panel_AR = () => {
       }
     };
     fetchRed();
-  }, [token]);
+  }, []);
 
-  const errors = useMemo(() => {
-    const n = normalizeSpaces(nombre);
-    const d = normalizeSpaces(descripcion);
-    return {
-      nombre:
-        n.length === 0
-          ? "El nombre es obligatorio."
-          : n.length < NAME_MIN
-          ? `El nombre debe tener al menos ${NAME_MIN} caracteres.`
-          : n.length > NAME_MAX
-          ? `El nombre no puede superar ${NAME_MAX} caracteres.`
-          : "",
-      descripcion:
-        d.length === 0
-          ? "La descripción es obligatoria."
-          : d.length < DESC_MIN
-          ? `La descripción debe tener al menos ${DESC_MIN} caracteres.`
-          : d.length > DESC_MAX
-          ? `La descripción no puede superar ${DESC_MAX} caracteres.`
-          : "",
-    };
-  }, [nombre, descripcion]);
 
-  const hasBlockingErrors = !!(errors.nombre || errors.descripcion);
-
-  const handleActualizar = async (e) => {
-    e.preventDefault();
-
-    if (!nombre.trim() || !descripcion.trim()) {
-      toast.warning("Todos los campos son obligatorios", { autoClose: 3000 });
-      return;
-    }
-    if (!validateNombre(nombre) || !validateDescripcion(descripcion)) {
-      setTouched({ nombre: true, descripcion: true });
-      return;
-    }
-
-    try {
-      const res = await axios.put(
-        "https://backendv2-as6n.onrender.com/api/admin/actualizar/red",
-        { nombre: normalizeSpaces(nombre), descripcion: normalizeSpaces(descripcion) },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      toast.success(res.data.msg || "Red actualizada correctamente.", { autoClose: 3000 });
-      setRed(res.data.red);
-      setNombre(res.data.red?.nombre ?? normalizeSpaces(nombre));
-      setDescripcion(res.data.red?.descripcion ?? normalizeSpaces(descripcion));
-      setTouched({ nombre: false, descripcion: false });
-    } catch (error) {
-      console.error("Error al actualizar la red:", error);
-      toast.error(error.response?.data?.msg || "Error al actualizar la red", { autoClose: 3000 });
-    }
-  };
-
-  const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
 
   if (loading) {
     return <p className="text-center text-gray-500">Cargando información...</p>;
@@ -141,119 +104,202 @@ const RedesC_Panel_AR = () => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: -30 }}
+      initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.8, ease: 'easeOut' }}
-      className="max-w-3xl mx-auto p-3 md:p-4"
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
     >
-      <h1 className="text-xl md:text-2xl font-bold text-center mb-3 md:mb-4">{red.nombre}</h1>
-      <p
-        className="text-blue-600 underline cursor-pointer text-center mb-4 md:mb-6 text-sm md:text-base"
-        onClick={() => setModalOpen(true)}
-      >
-        Ver detalles de la red
-      </p>
+      <div>
+        <h1 className="text-3xl font-bold text-white mb-2">
+          Mi Red
+        </h1>
+        <p className="text-slate-400">Información y configuración de la red comunitaria</p>
+      </div>
 
-      {/* Modal Detalles */}
-      {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 px-4">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setModalOpen(false)}
-          ></div>
-          <div className="relative bg-white p-4 md:p-6 rounded-lg shadow-lg max-w-md w-full z-10">
-            <h2 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Detalles de la Red</h2>
-            <p className="text-sm md:text-base mb-2"><strong>ID:</strong> {red._id}</p>
-            <p className="text-sm md:text-base mb-2"><strong>Nombre:</strong> {red.nombre}</p>
-            <p className="text-sm md:text-base mb-2"><strong>Descripción:</strong> {red.descripcion}</p>
-            <p className="text-sm md:text-base mb-2"><strong>Miembros:</strong> {red.miembros?.length ?? red.cantidadMiembros}</p>
-            <p className="text-sm md:text-base mb-2"><strong>Creada:</strong> {formatearFecha(red.createdAt)}</p>
-            <p className="text-sm md:text-base mb-2"><strong>Actualizada:</strong> {formatearFecha(red.updatedAt)}</p>
+      <div className="w-full">
+        <div className="transition-all">
+          
+          {!isEditing ? (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Tarjeta de Bienvenida y Red */}
+              <div className="lg:col-span-2 bg-gradient-to-r from-emerald-900/40 to-slate-800/80 rounded-2xl p-8 border border-slate-700 flex flex-col justify-between relative overflow-hidden shadow-xl">
+                <div className="relative z-10 flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+                  <div className="relative shrink-0">
+                    <img
+                      src={getImageUrl(red.fotoPerfil) || `https://ui-avatars.com/api/?name=${red.nombre}&background=10b981&color=fff&size=128`}
+                      alt="red"
+                      className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-emerald-500/50 object-cover shadow-lg"
+                    />
+                    {(red.esVerificada || red.esOficial) && (
+                      <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-slate-900 rounded-full p-1 shadow-lg border border-slate-700">
+                        <MdVerifiedUser size={24} className={red.esOficial ? "text-yellow-400" : "text-blue-500"} />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-white mb-2">¡Hola, {user?.nombre || 'Usuario'}! 👋</h2>
+                    <p className="text-slate-300 text-lg mb-4">
+                      Eres administrador de la red comunitaria <span className="font-semibold text-emerald-400">{red.nombre}</span>.
+                    </p>
+                    <p className="text-slate-400 text-sm leading-relaxed mb-6">
+                      {red.descripcion || 'Gestiona los detalles de tu red y mantén a tu comunidad informada y segura.'}
+                    </p>
+                    <button 
+                      onClick={handleEditClick} 
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-lg font-medium transition flex items-center gap-2 shadow-lg shadow-emerald-900/20 w-fit"
+                    >
+                      <FiEdit2 /> Editar Red
+                    </button>
+                  </div>
+                </div>
+                {/* Decoración de fondo opcional */}
+                <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+              </div>
 
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => setModalOpen(false)}
-                className="flex items-center justify-center w-auto mt-4 bg-white border border-slate-400 text-gray-700 px-4 py-2 rounded shadow-md 
-                        hover:bg-gray-700 hover:scale-102 duration-200 hover:text-white transition-al"
-              >
-                OK
-              </button>
+              {/* Tarjeta de Estadísticas */}
+              <div className="bg-slate-800/80 backdrop-blur rounded-2xl p-6 border border-slate-700 flex flex-col justify-center shadow-xl">
+                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                  Estadísticas
+                </h3>
+                <div className="space-y-4">
+                  <div className="bg-slate-900/50 p-5 rounded-xl border border-slate-700/50 flex items-center justify-between">
+                    <div>
+                      <p className="text-slate-400 text-sm font-medium mb-1">Miembros</p>
+                      <p className="text-3xl font-bold text-white">{red.miembros?.length ?? red.cantidadMiembros ?? '0'}</p>
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xl">
+                      <FiUsers />
+                    </div>
+                  </div>
+                  <div className="bg-slate-900/50 p-5 rounded-xl border border-slate-700/50 flex items-center justify-between">
+                    <div>
+                      <p className="text-slate-400 text-sm font-medium mb-1">Publicaciones</p>
+                      <p className="text-3xl font-bold text-white">{red.cantidadPublicaciones ?? '0'}</p>
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-xl">
+                      <FiFileText />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* Formulario de actualización */}
-      <form
-        onSubmit={handleActualizar}
-        className="bg-slate-300 p-6 rounded-lg shadow-lg  space-y-4"
-      >
-        <div>
-          <label className="block text-sm font-medium mb-1">Nombre</label>
-          <input
-            type="text"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value.slice(0, NAME_MAX))}
-            onBlur={() => {
-              setNombre((prev) => normalizeSpaces(prev));
-              if (nombre) validateNombre(nombre);
-              setTouched((t) => ({ ...t, nombre: true }));
-            }}
-            maxLength={NAME_MAX}
-            className={`w-full border rounded px-3 py-2 ${
-              touched.nombre && errors.nombre ? "border-red-500" : "border-gray-800"
-            }`}
-            placeholder="Nombre de la red"
-          />
-          <div className="flex justify-between text-xs text-gray-600 mt-1">
-            <span>Mín. {NAME_MIN} caracteres</span>
-            <span>{normalizeSpaces(nombre).length}/{NAME_MAX}</span>
-          </div>
-          {touched.nombre && errors.nombre && (
-            <p className="mt-1 text-xs text-red-600">{errors.nombre}</p>
+            {/* Guía de Administrador */}
+            <div className="mt-6 bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-6 lg:p-8 shadow-xl">
+              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <FiInfo className="text-blue-400" />
+                Guía del Administrador de Red
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Card 1 */}
+                <div className="bg-slate-900/50 p-5 rounded-xl border border-slate-700/50 hover:border-slate-600 transition">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
+                    <FiEdit2 size={20} />
+                  </div>
+                  <h4 className="font-bold text-white mb-2 text-sm">Gestionar Perfil</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">Puedes editar el nombre, la descripción y la foto de perfil de tu red para mantenerla actualizada y atractiva.</p>
+                </div>
+                {/* Card 2 */}
+                <div className="bg-slate-900/50 p-5 rounded-xl border border-slate-700/50 hover:border-slate-600 transition">
+                  <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 mb-4">
+                    <FiAlertTriangle size={20} />
+                  </div>
+                  <h4 className="font-bold text-white mb-2 text-sm">Moderar Reportes</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">Eres el encargado de revisar los reportes en tu red. Si aceptas un reporte, el contenido se elimina y el autor recibe un strike.</p>
+                </div>
+
+                {/* Card 4 */}
+                <div className="bg-slate-900/50 p-5 rounded-xl border border-slate-700/50 hover:border-slate-600 transition">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mb-4">
+                    <MdVerifiedUser size={20} />
+                  </div>
+                  <h4 className="font-bold text-white mb-2 text-sm">Solicitar Mejoras</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">Puedes enviar solicitudes a los SuperAdmins para obtener insignias de Verificación u Oficialización para tu red. (Aplica solo desde la aplicación movil)</p>
+                </div>
+              </div>
+            </div>
+            </>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-xl font-bold text-white">Editar Red</h2>
+                <button 
+                  type="button" 
+                  onClick={handleCancelEdit} 
+                  className="text-slate-400 hover:text-white transition"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+
+              <div className="flex flex-col items-center space-y-4">
+                <label className="cursor-pointer group relative">
+                  <div className="relative shrink-0">
+                    <img
+                      src={preview || getImageUrl(red.fotoPerfil) || `https://ui-avatars.com/api/?name=${red.nombre}&background=10b981&color=fff&size=128`}
+                      alt="red"
+                      className="w-32 h-32 rounded-full border-2 border-dashed border-emerald-500 object-cover shadow-lg group-hover:opacity-50 transition"
+                    />
+                    {(red.esVerificada || red.esOficial) && !preview && (
+                      <div className="absolute bottom-2 right-2 bg-slate-900 rounded-full p-1 shadow-lg border border-slate-700">
+                        <MdVerifiedUser size={24} className={red.esOficial ? "text-yellow-400" : "text-blue-500"} />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition pointer-events-none">
+                      <span className="bg-slate-900/80 text-white text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-sm">Cambiar Foto</span>
+                    </div>
+                  </div>
+                  <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                </label>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-slate-400 text-sm block mb-1">Nombre de la red</label>
+                  <input 
+                    type="text" 
+                    name="nombre" 
+                    value={formData.nombre} 
+                    onChange={handleChange} 
+                    required
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-400 text-sm block mb-1">Descripción</label>
+                  <textarea 
+                    name="descripcion" 
+                    value={formData.descripcion} 
+                    onChange={handleChange} 
+                    required
+                    rows="4"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-700 mt-6">
+                <button 
+                  type="button" 
+                  onClick={handleCancelEdit} 
+                  className="px-4 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition"
+                  disabled={saving}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-5 py-2.5 text-sm font-medium bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center gap-2 shadow-lg shadow-emerald-900/20"
+                  disabled={saving}
+                >
+                  {saving ? 'Guardando...' : <><FiSave size={16} /> Guardar Cambios</>}
+                </button>
+              </div>
+            </form>
           )}
         </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Descripción</label>
-          <textarea
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value.slice(0, DESC_MAX))}
-            onBlur={() => {
-              setDescripcion((prev) => normalizeSpaces(prev));
-              if (descripcion) validateDescripcion(descripcion);
-              setTouched((t) => ({ ...t, descripcion: true }));
-            }}
-            maxLength={DESC_MAX}
-            className={`w-full border rounded px-3 py-2 ${
-              touched.descripcion && errors.descripcion ? "border-red-500" : "border-gray-800"
-            }`}
-            placeholder="Descripción de la red"
-            rows="3"
-          />
-          <div className="flex justify-between text-xs text-gray-600 mt-1">
-            <span>Mín. {DESC_MIN} caracteres</span>
-            <span>{normalizeSpaces(descripcion).length}/{DESC_MAX}</span>
-          </div>
-          {touched.descripcion && errors.descripcion && (
-            <p className="mt-1 text-xs text-red-600">{errors.descripcion}</p>
-          )}
-        </div>
-
-        <button
-          type="submit"
-          disabled={hasBlockingErrors}
-          className={`flex items-center justify-center w-auto mt-3 md:mt-4 px-3 md:px-4 py-2 rounded shadow-md border transition-all text-sm md:text-base
-            ${
-              hasBlockingErrors
-                ? "bg-gray-200 border-slate-200 text-gray-400 cursor-not-allowed"
-                : "bg-white border border-slate-400 text-gray-700 hover:bg-gray-700 hover:scale-102 hover:text-white"
-            }`}
-        >
-          Actualizar
-        </button>
-      </form>
+      </div>
     </motion.div>
     
   );
