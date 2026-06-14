@@ -179,9 +179,8 @@ const Login = () => {
               Login Administrador
             </h1>
 
-            <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
-              Ingresa con tu correo y contraseña para acceder al panel de administración
-            </p>
+            <p className="text-slate-600 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+            Si fuiste redirigido desde la app móvil es porque ahora eres administrador de tu red. Usa este portal web para modificar el perfil de tu comunidad y gestionar funciones no disponibles en la versión móvil.            </p>
           </div>
 
           {/* Form */}
@@ -236,19 +235,6 @@ const Login = () => {
               </div>
 
 
-              <AnimatePresence>
-                {loginRole === LOGIN_ROLES.ADMIN_RED && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="bg-blue-50 border-l-4 border-blue-500 p-3 mt-2 rounded-r-lg shadow-sm"
-                  >
-                    <p className="text-blue-800 text-sm font-bold mb-1">Aviso para Administradores:</p>
-                    <p className="text-slate-600 text-sm leading-relaxed">Si fuiste redirigido desde la app móvil es porque ahora eres administrador de tu red. Usa este portal web para modificar el perfil de tu comunidad y gestionar funciones no disponibles en la versión móvil.</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
 
             {/* Email Field */}
