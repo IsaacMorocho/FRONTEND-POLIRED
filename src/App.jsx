@@ -21,6 +21,8 @@ import Estudiantes from './pages/Estudiantes'
 import Reset from './pages/recuperarpassword'
 import ProtectedRoute from './layout/ProtectedRoute'
 import PublicRoute from './layout/PublicRoute'
+import { ConfirmarCuenta } from './pages/ConfirmarCuenta'
+import ApelarPage  from './pages/ApelarPage'
 
 function App() {
   return (
@@ -48,6 +50,8 @@ function App() {
 
         <Route path="forgot" element={<Forgot />} />
         <Route path="recuperarpassword" element={<Reset />} />
+        <Route path="confirmar-cuenta/:token" element={<ConfirmarCuenta />} />
+        <Route path="crearApelacion" element={<ApelarPage/>}/>
 
         {/* Protegidas por rol */}
         {/* ADMINISTRADOR DE RED */}

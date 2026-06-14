@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import superadminService from "../../services/superadminService";
 
 const SolicitudesPanelAdmin = () => {
-  const [activeTab, setActiveTab] = useState('solicitudes_redes'); // 'solicitudes_redes', 'habilitar_usuarios'
+  const [activeTab, setActiveTab] = useState('solicitudes_redes'); // 'solicitudes_redes'
   const [dataList, setDataList] = useState([]);
   const [loading, setLoading] = useState(false);
   
@@ -21,15 +21,13 @@ const SolicitudesPanelAdmin = () => {
   const itemsPorPagina = 6;
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [resolverLoading, setResolverLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        if (activeTab === 'habilitar_usuarios') {
-          const data = await superadminService.getSolicitudes('habilitar_usuario');
-          setDataList(data.solicitudes || []);
-        } else if (activeTab === 'solicitudes_redes') {
+        if (activeTab === 'solicitudes_redes') {
           const data = await superadminService.getSolicitudesRedes();
           setDataList(data.redes || []);
         }
@@ -69,6 +67,7 @@ const SolicitudesPanelAdmin = () => {
   };
 
   const handleResolverRed = async (id, estado) => {
+    setResolverLoading(true);
     try {
       const accion = estado.toLowerCase() === 'resuelta' || estado.toLowerCase() === 'aprobada' ? 'aprobar' : 'rechazar';
       await superadminService.resolverAprobacionRed(id, accion);
@@ -78,6 +77,8 @@ const SolicitudesPanelAdmin = () => {
     } catch (error) {
       toast.error(error.response?.data?.msg || "Error al resolver la solicitud de red");
       console.error(error);
+    } finally {
+      setResolverLoading(false);
     }
   };
 
@@ -96,10 +97,8 @@ const SolicitudesPanelAdmin = () => {
     return true;
   });
 
-  if (activeTab !== 'habilitar_usuarios') {
-    if (categoriaSeleccionada !== 'Todas') {
-      filtrados = filtrados.filter(r => (r.tipo || 'Sin categoría') === categoriaSeleccionada);
-    }
+  if (categoriaSeleccionada !== 'Todas') {
+    filtrados = filtrados.filter(r => (r.tipo || 'Sin categoría') === categoriaSeleccionada);
   }
   
   itemsMostrados = filtrados;
@@ -115,28 +114,12 @@ const SolicitudesPanelAdmin = () => {
 
   const getTabTitle = () => {
     if (activeTab === 'solicitudes_redes') return 'Solicitudes Apertura de Redes';
-    if (activeTab === 'habilitar_usuarios') return 'Solicitudes Habilitación Usuarios';
     return 'Solicitudes';
   };
 
   return (
     <div className="flex flex-col h-full gap-6 p-2 sm:p-4 w-full">
-      {/* Tabs Menu */}
-      <div className="flex bg-slate-900 border border-slate-800 rounded-xl p-1 gap-1 w-full lg:w-fit self-center lg:self-start shadow-xl">
 
-        <button
-          onClick={() => setActiveTab('solicitudes_redes')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${activeTab === 'solicitudes_redes' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
-        >
-          <FiGlobe size={18} /> Solicitudes Apertura de Redes
-        </button>
-        <button
-          onClick={() => setActiveTab('habilitar_usuarios')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${activeTab === 'habilitar_usuarios' ? 'bg-green-600 text-white shadow-lg shadow-green-900/50' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
-        >
-          <FiUserCheck size={18} /> Solicitudes Habilitación Usuarios
-        </button>
-      </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* ---------------- BARRA LATERAL (FILTROS) ---------------- */}
@@ -233,9 +216,7 @@ const SolicitudesPanelAdmin = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 <AnimatePresence>
                   {itemsPaginados.map((item, idx) => {
-                    let titulo = item.tipo || 'Sin Tipo';
-                    if (activeTab === 'habilitar_usuarios') titulo = 'Solicitud de Habilitación';
-                    if (activeTab === 'solicitudes_redes') titulo = item.nombre || 'Solicitud de Red';
+                    let titulo = item.nombre || 'Solicitud de Red';
                     
                     const desc = item.descripcion || item.proposito || 'Sin descripción';
                     const estadoItem = (item.estado || item.estadoAprobacion || '').toLowerCase();
@@ -255,7 +236,6 @@ const SolicitudesPanelAdmin = () => {
                         <div className="relative h-48 bg-slate-800 overflow-hidden shrink-0">
                           <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${activeTab === 'solicitudes_redes' ? 'from-indigo-900/50 to-blue-900/50' : 'from-green-900/50 to-emerald-900/50'}`}>
                             {activeTab === 'solicitudes_redes' && <FiGlobe size={64} className="text-white/10" />}
-                            {activeTab === 'habilitar_usuarios' && <FiUserCheck size={64} className="text-white/10" />}
                           </div>
                           
                           <div className="absolute top-4 left-4">
@@ -346,7 +326,7 @@ const SolicitudesPanelAdmin = () => {
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-900 border border-slate-700 rounded-2xl p-0 w-full max-w-lg flex flex-col overflow-hidden shadow-2xl"
+            className="bg-slate-900 border border-slate-700 rounded-2xl p-0 w-full max-w-lg flex flex-col overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar"
           >
             <div className="p-6 border-b border-slate-800 relative">
               <button
@@ -381,7 +361,7 @@ const SolicitudesPanelAdmin = () => {
                 {activeTab !== 'solicitudes_redes' && (
                   <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
                     <span className="text-sm font-medium text-slate-400 block mb-2">Descripción / Motivo:</span>
-                    <p className="text-white text-sm leading-relaxed">{modalDetalles.item?.descripcion || modalDetalles.item?.proposito || 'Sin descripción'}</p>
+                    <p className="text-white text-sm leading-relaxed break-words">{modalDetalles.item?.descripcion || modalDetalles.item?.proposito || 'Sin descripción'}</p>
                   </div>
                 )}
 
@@ -399,11 +379,11 @@ const SolicitudesPanelAdmin = () => {
                   <>
                     <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
                       <span className="text-sm font-medium text-slate-400 block mb-2">Descripción:</span>
-                      <p className="text-white text-sm leading-relaxed">{modalDetalles.item?.descripcion || 'Sin descripción'}</p>
+                      <p className="text-white text-sm leading-relaxed break-words">{modalDetalles.item?.descripcion || 'Sin descripción'}</p>
                     </div>
                     <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
                       <span className="text-sm font-medium text-slate-400 block mb-2">Propósito:</span>
-                      <p className="text-white text-sm leading-relaxed">{modalDetalles.item?.proposito || 'Sin propósito'}</p>
+                      <p className="text-white text-sm leading-relaxed break-words">{modalDetalles.item?.proposito || 'Sin propósito'}</p>
                     </div>
                     {modalDetalles.item?.administrador && (
                       <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
@@ -424,15 +404,7 @@ const SolicitudesPanelAdmin = () => {
                 )}
 
 
-                {activeTab === 'habilitar_usuarios' && modalDetalles.item?.solicitante && (
-                  <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                    <span className="text-sm font-medium text-slate-400 block mb-2">Usuario Solicitante:</span>
-                    <span className="text-white text-sm font-bold block">
-                      <span className="block">{modalDetalles.item.solicitante.nombre} {modalDetalles.item.solicitante.apellido}</span>
-                      <span className="block text-slate-400 font-normal text-xs">{modalDetalles.item.solicitante.email}</span>
-                    </span>
-                  </div>
-                )}
+
               </div>
             </div>
             
@@ -441,22 +413,32 @@ const SolicitudesPanelAdmin = () => {
                 {(!(modalDetalles.item?.estado || modalDetalles.item?.estadoAprobacion) || (modalDetalles.item.estado || modalDetalles.item.estadoAprobacion).toLowerCase() === 'pendiente') && (
                   <>
                     <button
+                      disabled={resolverLoading}
                       onClick={() => {
-                        if (activeTab === 'habilitar_usuarios') handleResolverSolicitudHabilitar(modalDetalles.item._id, 'Aprobar');
                         if (activeTab === 'solicitudes_redes') handleResolverRed(modalDetalles.item._id, 'Aprobada');
                       }}
-                      className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-green-900/20"
+                      className={`w-full flex items-center justify-center gap-2 text-white font-bold py-3 rounded-xl transition shadow-lg ${resolverLoading ? 'bg-slate-600 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 shadow-green-900/20'}`}
                     >
-                      <MdCheckCircle size={20} /> Aprobar Solicitud
+                      {resolverLoading ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <MdCheckCircle size={20} />
+                      )} 
+                      {resolverLoading ? 'Procesando...' : 'Aprobar Solicitud'}
                     </button>
                     <button
+                      disabled={resolverLoading}
                       onClick={() => {
-                        if (activeTab === 'habilitar_usuarios') handleResolverSolicitudHabilitar(modalDetalles.item._id, 'Rechazar');
                         if (activeTab === 'solicitudes_redes') handleResolverRed(modalDetalles.item._id, 'Rechazada');
                       }}
-                      className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-red-900/20"
+                      className={`w-full flex items-center justify-center gap-2 text-white font-bold py-3 rounded-xl transition shadow-lg ${resolverLoading ? 'bg-slate-600 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 shadow-red-900/20'}`}
                     >
-                      <MdCancel size={20} /> Rechazar
+                      {resolverLoading ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <MdCancel size={20} />
+                      )}
+                      {resolverLoading ? 'Procesando...' : 'Rechazar'}
                     </button>
                   </>
                 )}

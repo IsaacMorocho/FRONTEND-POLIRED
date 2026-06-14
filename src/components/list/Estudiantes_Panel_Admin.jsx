@@ -308,7 +308,7 @@ const EstudiantesPanelAdmin = () => {
 
                 <div>
                   <span className="text-xs text-slate-500 uppercase font-semibold block mb-1">Biografía</span>
-                  <p className="text-slate-300 text-sm">
+                  <p className="text-slate-300 text-sm break-words break-all">
                     {modalVer.estudiante.biografia || <span className="italic text-slate-500">Sin biografía</span>}
                   </p>
                 </div>

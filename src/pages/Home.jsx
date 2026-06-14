@@ -790,7 +790,7 @@ const Home =()=>{
                                         </div>
 
                                         <div>
-                                            <p className='text-purple-500 font-semibold text-sm uppercase tracking-wider mb-3'>→ LA VISIÓN</p>
+                                            <p className='text-purple-500 font-semibold text-sm uppercase tracking-wider mb-3'>→ NUESTRA VISIÓN</p>
                                             <p className='text-white text-base sm:text-lg leading-relaxed'>Más que una red social, PoliRED busca convertirse en un espacio universitario donde la colaboración y la participación formen parte de la experiencia estudiantil diaria.</p>
                                         </div>
                                     </motion.div>

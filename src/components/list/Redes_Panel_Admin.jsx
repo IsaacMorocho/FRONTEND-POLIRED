@@ -315,12 +315,12 @@ const RedesPanelAdmin = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 col-span-1 md:col-span-2">
                   <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">Descripción</span>
-                  <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{modalVer.red.descripcion || 'Sin descripción'}</p>
+                  <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap break-words break-all">{modalVer.red.descripcion || 'Sin descripción'}</p>
                 </div>
                 
                 <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 col-span-1 md:col-span-2">
                   <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">Propósito</span>
-                  <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{modalVer.red.proposito || 'Sin propósito especificado'}</p>
+                  <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap break-words break-all">{modalVer.red.proposito || 'Sin propósito especificado'}</p>
                 </div>
                 
                 <div 
@@ -418,7 +418,7 @@ const RedesPanelAdmin = () => {
                 
                 <div>
                   <span className="text-xs text-slate-500 uppercase font-semibold block">Biografía</span>
-                  <p className="text-slate-300 text-sm">
+                  <p className="text-slate-300 text-sm break-words break-all">
                     {modalAdmin.admin.biografia || <span className="italic text-slate-500">Sin biografía</span>}
                   </p>
                 </div>

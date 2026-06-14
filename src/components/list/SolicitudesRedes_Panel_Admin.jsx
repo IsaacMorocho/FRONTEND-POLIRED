@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import superadminService from "../../services/superadminService";
 
 const SolicitudesRedesPanelAdmin = () => {
-  const [activeTab, setActiveTab] = useState('verificacion'); // 'verificacion', 'oficializacion', 'rehabilitacion', 'reportes'
+  const [activeTab, setActiveTab] = useState('verificacion'); // 'verificacion', 'oficializacion', 'reportes'
   const [dataList, setDataList] = useState([]);
   const [loading, setLoading] = useState(false);
   
@@ -40,9 +40,6 @@ const SolicitudesRedesPanelAdmin = () => {
         } else if (activeTab === 'oficializacion') {
           const data = await superadminService.getSolicitudes('oficializacion');
           setDataList(data.solicitudes || []);
-        } else if (activeTab === 'rehabilitacion') {
-          const data = await superadminService.getSolicitudes('rehabilitar_red');
-          setDataList(data.solicitudes || []);
         } else if (activeTab === 'reportes') {
           const data = await superadminService.getReportes('red');
           setDataList(data.reportes || []);
@@ -73,8 +70,6 @@ const SolicitudesRedesPanelAdmin = () => {
         await superadminService.resolverSolicitudVerificacion(id, { estado: accion });
       } else if (subtype === 'oficializacion') {
         await superadminService.resolverSolicitudOficializacion(id, { estado: accion });
-      } else if (subtype === 'rehabilitar_red') {
-        await superadminService.resolverSolicitudRehabilitar(id, { accion });
       }
       toast.success(`Solicitud de red procesada`);
       setModalDetalles({ visible: false, item: null });
@@ -122,7 +117,6 @@ const SolicitudesRedesPanelAdmin = () => {
   const getTabTitle = () => {
     if (activeTab === 'verificacion') return 'Solicitudes de Verificación';
     if (activeTab === 'oficializacion') return 'Solicitudes de Oficialización';
-    if (activeTab === 'rehabilitacion') return 'Solicitudes de Rehabilitación';
     if (activeTab === 'reportes') return 'Reportes de Redes';
     return '';
   };
@@ -142,12 +136,6 @@ const SolicitudesRedesPanelAdmin = () => {
           className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${activeTab === 'oficializacion' ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/50' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
         >
           <FiStar size={18} /> Oficialización
-        </button>
-        <button
-          onClick={() => setActiveTab('rehabilitacion')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${activeTab === 'rehabilitacion' ? 'bg-green-600 text-white shadow-lg shadow-green-900/50' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
-        >
-          <FiRefreshCw size={18} /> Rehabilitación
         </button>
         <button
           onClick={() => setActiveTab('reportes')}
@@ -233,7 +221,6 @@ const SolicitudesRedesPanelAdmin = () => {
                     let titulo = 'Solicitud de Red';
                     if (activeTab === 'verificacion') titulo = 'Solicitar Verificación';
                     if (activeTab === 'oficializacion') titulo = 'Solicitar Oficialización';
-                    if (activeTab === 'rehabilitacion') titulo = 'Rehabilitar Red';
                     if (activeTab === 'reportes') titulo = item.tipo || 'Reporte de Red';
                     
                     const desc = item.descripcion || (item.meta?.justificacion || 'Sin descripción');
@@ -255,12 +242,10 @@ const SolicitudesRedesPanelAdmin = () => {
                           <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${
                             activeTab === 'verificacion' ? 'from-blue-900/50 to-cyan-900/50' : 
                             activeTab === 'oficializacion' ? 'from-purple-900/50 to-pink-900/50' : 
-                            activeTab === 'rehabilitacion' ? 'from-green-900/50 to-emerald-900/50' : 
                             'from-red-900/50 to-orange-900/50'
                           }`}>
                             {activeTab === 'verificacion' && <FiShield size={64} className="text-white/10" />}
                             {activeTab === 'oficializacion' && <FiStar size={64} className="text-white/10" />}
-                            {activeTab === 'rehabilitacion' && <FiRefreshCw size={64} className="text-white/10" />}
                             {activeTab === 'reportes' && <FiAlertOctagon size={64} className="text-white/10" />}
                           </div>
                           
@@ -400,7 +385,7 @@ const SolicitudesRedesPanelAdmin = () => {
                     </div>
                     <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
                       <span className="text-sm font-medium text-slate-400 block mb-2">Descripción:</span>
-                      <p className="text-white text-sm leading-relaxed">{modalDetalles.item?.descripcion || 'Sin descripción'}</p>
+                      <p className="text-white text-sm leading-relaxed break-words">{modalDetalles.item?.descripcion || 'Sin descripción'}</p>
                     </div>
                   </>
                 )}
@@ -409,11 +394,11 @@ const SolicitudesRedesPanelAdmin = () => {
                   <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col gap-3">
                     <div>
                       <span className="text-xs font-medium text-slate-400">Red a verificar:</span>
-                      <p className="text-white text-sm">{modalDetalles.item?.meta?.nombreRed}</p>
+                      <p className="text-white text-sm break-words">{modalDetalles.item?.meta?.nombreRed}</p>
                     </div>
                     <div>
                       <span className="text-xs font-medium text-slate-400">Correo Institucional:</span>
-                      <p className="text-white text-sm">{modalDetalles.item?.meta?.correoInstitucional}</p>
+                      <p className="text-white text-sm break-words">{modalDetalles.item?.meta?.correoInstitucional}</p>
                     </div>
                     <div>
                       <span className="text-xs font-medium text-slate-400">Cantidad Miembros:</span>
@@ -426,31 +411,24 @@ const SolicitudesRedesPanelAdmin = () => {
                   <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col gap-3">
                     <div>
                       <span className="text-xs font-medium text-slate-400">Red a oficializar:</span>
-                      <p className="text-white text-sm">{modalDetalles.item?.meta?.nombreRed}</p>
+                      <p className="text-white text-sm break-words">{modalDetalles.item?.meta?.nombreRed}</p>
                     </div>
                     <div>
                       <span className="text-xs font-medium text-slate-400">Cargo:</span>
-                      <p className="text-white text-sm">{modalDetalles.item?.meta?.cargo}</p>
+                      <p className="text-white text-sm break-words">{modalDetalles.item?.meta?.cargo}</p>
                     </div>
                     <div>
                       <span className="text-xs font-medium text-slate-400">Dependencia:</span>
-                      <p className="text-white text-sm">{modalDetalles.item?.meta?.dependencia}</p>
+                      <p className="text-white text-sm break-words">{modalDetalles.item?.meta?.dependencia}</p>
                     </div>
                     <div>
                       <span className="text-xs font-medium text-slate-400">Justificación:</span>
-                      <p className="text-white text-sm">{modalDetalles.item?.meta?.justificacion}</p>
+                      <p className="text-white text-sm break-words">{modalDetalles.item?.meta?.justificacion}</p>
                     </div>
                   </div>
                 )}
 
-                {activeTab === 'rehabilitacion' && (
-                  <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col gap-3">
-                    <div>
-                      <span className="text-xs font-medium text-slate-400">Motivo:</span>
-                      <p className="text-white text-sm">{modalDetalles.item?.descripcion}</p>
-                    </div>
-                  </div>
-                )}
+
               </div>
             </div>
             
@@ -464,8 +442,7 @@ const SolicitudesRedesPanelAdmin = () => {
                         else {
                           const actionMap = {
                             'verificacion': 'Aprobada',
-                            'oficializacion': 'Aprobada',
-                            'rehabilitacion': 'Aprobar'
+                            'oficializacion': 'Aprobada'
                           };
                           handleResolverSolicitud(modalDetalles.item._id, actionMap[activeTab], activeTab);
                         }
@@ -485,8 +462,7 @@ const SolicitudesRedesPanelAdmin = () => {
                         else {
                           const actionMap = {
                             'verificacion': 'Rechazada',
-                            'oficializacion': 'Rechazada',
-                            'rehabilitacion': 'Rechazar'
+                            'oficializacion': 'Rechazada'
                           };
                           handleResolverSolicitud(modalDetalles.item._id, actionMap[activeTab], activeTab);
                         }

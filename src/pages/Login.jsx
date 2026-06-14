@@ -234,6 +234,21 @@ const Login = () => {
                   Admin de Red
                 </button>
               </div>
+
+
+              <AnimatePresence>
+                {loginRole === LOGIN_ROLES.ADMIN_RED && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="bg-blue-50 border-l-4 border-blue-500 p-3 mt-2 rounded-r-lg shadow-sm"
+                  >
+                    <p className="text-blue-800 text-sm font-bold mb-1">Aviso para Administradores:</p>
+                    <p className="text-slate-600 text-sm leading-relaxed">Si fuiste redirigido desde la app móvil es porque ahora eres administrador de tu red. Usa este portal web para modificar el perfil de tu comunidad y gestionar funciones no disponibles en la versión móvil.</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Email Field */}
@@ -282,14 +297,14 @@ const Login = () => {
 
                 <button
                   type="button"
-                  onClick={() => setShowForgot(true)}
-                  className="
-                    text-sm 
-                    text-blue-600 
-                    hover:text-blue-700 
-                    font-semibold 
-                    transition
-                  "
+                  onClick={() => loginRole !== LOGIN_ROLES.ADMIN_RED && setShowForgot(true)}
+                  disabled={loginRole === LOGIN_ROLES.ADMIN_RED}
+                  className={`
+                    text-sm font-semibold transition
+                    ${loginRole === LOGIN_ROLES.ADMIN_RED 
+                      ? 'text-slate-400 cursor-not-allowed opacity-60' 
+                      : 'text-blue-600 hover:text-blue-700'}
+                  `}
                 >
                   ¿Olvidé mi contraseña?
                 </button>
