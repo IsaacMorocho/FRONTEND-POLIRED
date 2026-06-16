@@ -21,8 +21,9 @@ import Estudiantes from './pages/Estudiantes'
 import Reset from './pages/recuperarpassword'
 import ProtectedRoute from './layout/ProtectedRoute'
 import PublicRoute from './layout/PublicRoute'
+import ApelarPage from './pages/ApelarPage'
+import Apelaciones from './pages/Apelaciones'
 import { ConfirmarCuenta } from './pages/ConfirmarCuenta'
-import ApelarPage  from './pages/ApelarPage'
 
 function App() {
   return (
@@ -86,6 +87,7 @@ function App() {
           <Route path="solicitudes" element={<Solicitudes />} />
           <Route path="solicitudes-redes" element={<SolicitudesRedes />} />
           <Route path="estudiantes" element={<Estudiantes />} />
+          <Route path="apelaciones" element={<Apelaciones />} />
         </Route>
 
         {/* Fallback */}

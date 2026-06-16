@@ -86,12 +86,28 @@ const ReportesSolicitudesAR = () => {
     try {
       await adminRedService.resolverReporte(reporteId, { estado });
       const nuevoEstado = estado.toLowerCase() === 'resuelta' ? 'resuelto' : estado.toLowerCase();
-      setReportes(reportes.map(r => r._id === reporteId ? { ...r, estado: nuevoEstado } : r));
+      
+      const reporteResuelto = reportes.find(r => r._id === reporteId);
+      const publicacionId = reporteResuelto?.meta?.publicacionId?._id || reporteResuelto?.meta?.publicacionId;
+
+      setReportes(reportes.map(r => {
+        if (r._id === reporteId) {
+          return { ...r, estado: nuevoEstado };
+        }
+        // Si el reporte resuelto fue aceptado (contenido eliminado), cerramos también los demás reportes pendientes de la misma publicación
+        if (nuevoEstado === 'resuelto' && publicacionId && r.estado === 'pendiente') {
+          const rPubId = r.meta?.publicacionId?._id || r.meta?.publicacionId;
+          if (rPubId === publicacionId) {
+            return { ...r, estado: 'resuelto' };
+          }
+        }
+        return r;
+      }));
       setModalDetalles({ visible: false, item: null, tipo: null });
       toast.success(`Reporte ${estado}`);
     } catch (error) {
       console.error("Error:", error);
-      console.error("Error:", error);
+      toast.error("Error al resolver el reporte");
     }
   };
 
@@ -517,13 +533,13 @@ const ReportesSolicitudesAR = () => {
                           </p>
                           <div className="flex flex-row md:flex-col gap-2 md:gap-3">
                             <button
-                              onClick={() => handleResolverReporte(modalDetalles.item._id, 'Resuelta')}
+                              onClick={() => handleResolverReporte(modalDetalles.item._id, 'resuelto')}
                               className="flex-1 w-full flex items-center justify-center gap-1 md:gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 md:py-3 rounded-xl transition shadow-lg shadow-green-900/20 text-xs md:text-base"
                             >
                               <MdCheckCircle className="w-4 h-4 md:w-5 md:h-5" /> Aceptar
                             </button>
                             <button
-                              onClick={() => handleResolverReporte(modalDetalles.item._id, 'Rechazada')}
+                              onClick={() => handleResolverReporte(modalDetalles.item._id, 'rechazado')}
                               className="flex-1 w-full flex items-center justify-center gap-1 md:gap-2 bg-red-600 hover:bg-red-500 text-white font-bold py-2 md:py-3 rounded-xl transition shadow-lg shadow-red-900/20 text-xs md:text-base"
                             >
                               <MdCancel className="w-4 h-4 md:w-5 md:h-5" /> Rechazar

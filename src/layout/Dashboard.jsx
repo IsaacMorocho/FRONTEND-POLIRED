@@ -46,6 +46,7 @@ const Dashboard = () => {
     { path: '/dashboard/reportes', label: 'Reportes', icon: MdWarning },
     { path: '/dashboard/solicitudes', label: 'Solicitudes', icon: MdPeople },
     { path: '/dashboard/solicitudes-redes', label: 'Solicitudes de Redes', icon: MdAssignmentTurnedIn },
+    { path: '/dashboard/apelaciones', label: 'Apelaciones', icon: MdWarning },
   ];
 
   const isActive = (path) => urlActual === path;

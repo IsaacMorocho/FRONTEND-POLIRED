@@ -9,6 +9,7 @@ export default function StrikesModal({ entidadTipo, entidadId, entidadNombre, on
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [strikeAEliminar, setStrikeAEliminar] = useState(null)
 
   const MAX_STRIKES = 5
   const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -36,6 +37,7 @@ export default function StrikesModal({ entidadTipo, entidadId, entidadNombre, on
         ? await eliminarStrikeUsuario(entidadId, strikeId)
         : await eliminarStrikeRed(entidadId, strikeId)
       setRefreshTrigger(prev => prev + 1) // refrescar
+      setStrikeAEliminar(null)
     } catch {
       alert('Error al eliminar el strike.')
     }
@@ -117,7 +119,7 @@ export default function StrikesModal({ entidadTipo, entidadId, entidadNombre, on
                       </p>
                     </div>
                     <button
-                      onClick={() => handleEliminar(strike._id)}
+                        onClick={() => setStrikeAEliminar(strike._id)}
                       className="text-gray-600 hover:text-red-400 transition-colors flex-shrink-0 mt-1"
                       title="Eliminar strike"
                     >
@@ -130,6 +132,32 @@ export default function StrikesModal({ entidadTipo, entidadId, entidadNombre, on
           </>
         )}
       </div>
+
+      {/* Modal de confirmación */}
+      {strikeAEliminar && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl max-w-sm w-full mx-4 p-5 shadow-2xl">
+            <h3 className="text-white font-bold text-lg mb-2">Confirmar eliminación</h3>
+            <p className="text-gray-300 text-sm mb-6">
+              ¿Estás seguro de que deseas eliminar esta infracción? Esta acción es irreversible.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setStrikeAEliminar(null)}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleEliminar(strikeAEliminar)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
