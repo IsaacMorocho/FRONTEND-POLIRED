@@ -30,8 +30,8 @@ const authService = {
   resetPassword: async (token, passwords) => {
     const response = await apiClient.post(`/nuevo-password/${token}`, passwords);
     return response.data;
-  }
-    confirmarCuenta: async (token) => {
+  },
+  confirmarCuenta: async (token) => {
     const response = await apiClient.get(`/confirmar/${token}`);
     return response.data;
   }
