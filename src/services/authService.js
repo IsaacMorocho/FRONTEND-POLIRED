@@ -31,6 +31,10 @@ const authService = {
     const response = await apiClient.post(`/nuevo-password/${token}`, passwords);
     return response.data;
   }
+    confirmarCuenta: async (token) => {
+    const response = await apiClient.get(`/confirmar/${token}`);
+    return response.data;
+  }
 };
 
 export default authService;
