@@ -43,8 +43,8 @@ const RedGlobalPanelAdmin = () => {
           catLegible = 'Noticias';
         } else if (item.subtype === 'articulo') {
           const catInterna = item.meta?.articuloId?.categoria;
-          if (catInterna === 'venta') catLegible = 'Ventas';
-          if (catInterna === 'cursos') catLegible = 'Cursos';
+          if (catInterna?.toLowerCase() === 'venta') catLegible = 'Ventas';
+          if (catInterna?.toLowerCase() === 'cursos') catLegible = 'Cursos';
         }
         return { ...item, categoriaLegible: catLegible };
       });
