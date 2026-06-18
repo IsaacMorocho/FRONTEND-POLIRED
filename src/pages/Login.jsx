@@ -180,7 +180,7 @@ const Login = () => {
             </h1>
 
             <p className="text-slate-600 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-            Si fuiste redirigido desde la app móvil es porque ahora eres administrador de tu red. Usa este portal web para modificar el perfil de tu comunidad y gestionar funciones no disponibles en la versión móvil.            </p>
+            Administrador de Red: Si fuiste redirigido desde la app móvil es porque ahora eres administrador de tu red. Usa este portal web para modificar el perfil de tu comunidad y gestionar funciones no disponibles en la versión móvil. </p>
           </div>
 
           {/* Form */}
@@ -233,8 +233,18 @@ const Login = () => {
                   Admin de Red
                 </button>
               </div>
-
-
+              <AnimatePresence>
+                {loginRole === LOGIN_ROLES.ADMIN_RED && (
+                  <motion.p
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="text-xs text-purple-700 bg-purple-50 border border-purple-100 p-2 rounded-lg mt-1 font-medium"
+                  >
+                    💡 Puedes usar las mismas credenciales de tu cuenta de estudiante para iniciar sesión.
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Email Field */}
