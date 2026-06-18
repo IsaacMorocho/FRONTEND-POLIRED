@@ -241,7 +241,7 @@ const Login = () => {
                     exit={{ opacity: 0, height: 0 }}
                     className="text-xs text-purple-700 bg-purple-50 border border-purple-100 p-2 rounded-lg mt-1 font-medium"
                   >
-                    💡 Puedes usar las mismas credenciales de tu cuenta de estudiante para iniciar sesión.
+                    💡 Puedes usar las mismas credenciales de tu cuenta de estudiante para iniciar sesión como Admin de Red.
                   </motion.p>
                 )}
               </AnimatePresence>
