@@ -180,7 +180,7 @@ const Login = () => {
             </h1>
 
             <p className="text-slate-600 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-            Administrador de Red: Si fuiste redirigido desde la app móvil es porque ahora eres administrador de tu red. Usa este portal web para modificar el perfil de tu comunidad y gestionar funciones no disponibles en la versión móvil. </p>
+            Si fuiste redirigido desde la app móvil es porque ahora eres administrador de tu red (Admin de Red). Usa este portal web para modificar el perfil de tu comunidad y gestionar funciones no disponibles en la versión móvil. </p>
           </div>
 
           {/* Form */}
