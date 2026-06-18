@@ -165,6 +165,21 @@ const superadminService = {
   resolverAprobacionRed: async (id, accion) => {
     const response = await apiClient.patch(`/superadmin/redes/${id}/aprobacion`, { accion });
     return response.data;
+  },
+
+  getApelaciones: async () => {
+    const response = await apiClient.get('/apelaciones');
+    return response.data;
+  },
+
+  getApelacionById: async (id) => {
+    const response = await apiClient.get(`/apelaciones/${id}`);
+    return response.data;
+  },
+
+  resolverApelacion: async (id, data) => {
+    const response = await apiClient.patch(`/apelaciones/${id}/resolver`, data);
+    return response.data;
   }
 };
 
