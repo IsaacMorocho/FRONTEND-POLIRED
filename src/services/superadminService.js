@@ -36,22 +36,22 @@ const superadminService = {
     return response.data;
   },
 
-  updateEstudiante: async (id, data) => {
+  updateEstudiante: async (id, data) => { //Endpoint a eliminar
     const response = await apiClient.patch(`/actualizar-estudiantes/${id}`, data);
     return response.data;
   },
 
-  deleteEstudiante: async (id) => {
+  deleteEstudiante: async (id) => { //eliminar estudiante
     const response = await apiClient.delete(`/eliminar-estudiantes/${id}`);
     return response.data;
   },
 
-  suspenderEstudiante: async (id) => {
+  suspenderEstudiante: async (id) => { //eliminar
     const response = await apiClient.patch(`/estudiantes/${id}/suspender`, {});
     return response.data;
   },
 
-  habilitarEstudiante: async (id) => {
+  habilitarEstudiante: async (id) => { //eliminar
     const response = await apiClient.patch(`/estudiantes/${id}/habilitar`, {});
     return response.data;
   },
@@ -66,7 +66,7 @@ const superadminService = {
     return response.data;
   },
 
-  updateRed: async (id, data) => {
+  updateRed: async (id, data) => { //eliminar
     const response = await apiClient.patch(`/actualizar-red/${id}`, data);
     return response.data;
   },
@@ -76,17 +76,17 @@ const superadminService = {
     return response.data;
   },
 
-  verificarRed: async (id, verificada) => {
+  verificarRed: async (id, verificada) => { //eliminar
     const response = await apiClient.patch(`/red/${id}/verificada`, { verificada });
     return response.data;
   },
 
-  getSolicitudesRedes: async () => {
+  getSolicitudesRedes: async () => { 
     const response = await apiClient.get('/superadmin/redes/pendientes');
     return response.data;
   },
 
-  getSolicitudesRehabilitacion: async () => {
+  getSolicitudesRehabilitacion: async () => { //pendiente eliminar
     const response = await apiClient.get('/redes/rehabilitar/solicitudes');
     return response.data;
   },
