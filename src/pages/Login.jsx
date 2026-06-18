@@ -247,7 +247,6 @@ const Login = () => {
               </AnimatePresence>
             </div>
 
-            {/* Email Field */}
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-slate-700">
                 Correo electrónico
