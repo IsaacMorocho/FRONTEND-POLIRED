@@ -19,6 +19,7 @@ import ReportesSolicitudesAR from './pages/ReportesSolicitudesAR'
 import EstudiantesAR from './pages/EstudiantesAR'
 import Estudiantes from './pages/Estudiantes'
 import Reset from './pages/recuperarpassword'
+import ResetSP from './pages/recuperarpasswordSP'
 import ProtectedRoute from './layout/ProtectedRoute'
 import PublicRoute from './layout/PublicRoute'
 import ApelarPage from './pages/ApelarPage'
@@ -50,7 +51,8 @@ function App() {
 
 
         <Route path="forgot" element={<Forgot />} />
-        <Route path="recuperarpassword-e" element={<Reset />} />
+        <Route path="recuperarpassword-e/:token" element={<Reset />} />
+        <Route path="recuperarpassword/:token" element={<ResetSP />} />
         <Route path="confirmar-cuenta/:token" element={<ConfirmarCuenta />} />
         <Route path="crearApelacion" element={<ApelarPage/>}/>
 

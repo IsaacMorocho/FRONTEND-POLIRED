@@ -17,6 +17,16 @@ const authService = {
     return response.data;
   },
 
+  verifyResetTokenSuperAdmin: async (token) => {
+    const response = await apiClient.get(`/recuperar-password/${token}`);
+    return response.data;
+  },
+
+  resetPasswordSuperAdmin: async (token, passwords) => {
+    const response = await apiClient.post(`/nuevo-password/${token}`, passwords);
+    return response.data;
+  },
+
   recuperarPasswordEstudiante: async (email) => {
     const response = await apiClient.post('/recuperar-password-e', { email });
     return response.data;

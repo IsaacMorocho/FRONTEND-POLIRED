@@ -16,7 +16,7 @@ const COMMON_PASSWORDS = new Set([
   '111111', '123123', 'abc123', 'password1', '1234567'
 ]);
 
-const RecuperarPassword = () => {
+const RecuperarPasswordSP = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
@@ -38,7 +38,7 @@ const RecuperarPassword = () => {
   useEffect(() => {
     const verifyToken = async () => {
       try {
-        await authService.verifyResetToken(token);
+        await authService.verifyResetTokenSuperAdmin(token);
         setStep('reset');
       } catch {
         toast.error('Token inválido o expirado');
@@ -72,7 +72,7 @@ const RecuperarPassword = () => {
 
     setLoading(true);
     try {
-      await authService.resetPassword(token, { password, confirmpassword: conf });
+      await authService.resetPasswordSuperAdmin(token, { password, confirmpassword: conf });
       toast.success('Contraseña actualizada correctamente');
       setStep('success');
       setTimeout(() => {
@@ -108,11 +108,11 @@ const RecuperarPassword = () => {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
             Poli<span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">RED</span>
           </h1>
-          <p className="text-slate-400">Estudiante - Recuperar Contraseña</p>
+          <p className="text-slate-400">SuperAdmin - Recuperar Contraseña</p>
         </div>
 
         <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-lg p-8 shadow-2xl">
-          
+
           {step === 'reset' && (
             <motion.div
               key="reset"
@@ -303,4 +303,4 @@ const RecuperarPassword = () => {
   );
 };
 
-export default RecuperarPassword;
+export default RecuperarPasswordSP;
