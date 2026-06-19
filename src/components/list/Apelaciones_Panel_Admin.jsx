@@ -10,6 +10,7 @@ const Apelaciones_Panel_Admin = () => {
   const [selectedApelacion, setSelectedApelacion] = useState(null);
   const [notaResolucion, setNotaResolucion] = useState('');
   const [resolviendo, setResolviendo] = useState(false);
+  const [tipoFiltro, setTipoFiltro] = useState('usuario');
 
   const fetchApelaciones = async () => {
     try {
@@ -69,6 +70,24 @@ const Apelaciones_Panel_Admin = () => {
     <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold text-white">Gestión de Apelaciones</h2>
+        <div className="flex bg-slate-800 rounded-lg p-1">
+          <button
+            onClick={() => setTipoFiltro('usuario')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              tipoFiltro === 'usuario' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Cuentas
+          </button>
+          <button
+            onClick={() => setTipoFiltro('red')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              tipoFiltro === 'red' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Redes
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -76,28 +95,28 @@ const Apelaciones_Panel_Admin = () => {
           <thead className="bg-slate-800/50 text-xs uppercase text-slate-400">
             <tr>
               <th className="px-4 py-3 rounded-tl-lg">Fecha</th>
-              <th className="px-4 py-3">Estudiante</th>
+              <th className="px-4 py-3">{tipoFiltro === 'usuario' ? 'Estudiante' : 'Red'}</th>
               <th className="px-4 py-3">Motivo</th>
               <th className="px-4 py-3">Estado</th>
               <th className="px-4 py-3 rounded-tr-lg text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {apelaciones.length === 0 ? (
+            {apelaciones.filter(ap => (ap.tipo || 'usuario') === tipoFiltro).length === 0 ? (
               <tr>
                 <td colSpan="5" className="px-4 py-8 text-center text-slate-500">
                   No hay apelaciones registradas.
                 </td>
               </tr>
             ) : (
-              apelaciones.map((ap) => (
+              apelaciones.filter(ap => (ap.tipo || 'usuario') === tipoFiltro).map((ap) => (
                 <tr key={ap._id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
                   <td className="px-4 py-4 whitespace-nowrap">
                     {new Date(ap.fechaCreacion).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-4">
-                    <div className="font-medium text-white">{ap.nombre}</div>
-                    <div className="text-xs text-slate-400">{ap.correo}</div>
+                    <div className="font-medium text-white">{tipoFiltro === 'usuario' ? ap.nombre : ap.redId?.nombre}</div>
+                    <div className="text-xs text-slate-400">{tipoFiltro === 'usuario' ? ap.correo : ap.estudianteId?.correo}</div>
                   </td>
                   <td className="px-4 py-4 max-w-xs truncate" title={ap.motivo}>
                     {ap.motivo}
@@ -143,8 +162,15 @@ const Apelaciones_Panel_Admin = () => {
               
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Estudiante</label>
-                  <p className="text-slate-200">{selectedApelacion.nombre} ({selectedApelacion.correo})</p>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    {selectedApelacion.tipo === 'red' ? 'Red' : 'Estudiante'}
+                  </label>
+                  <p className="text-slate-200">
+                    {selectedApelacion.tipo === 'red' 
+                      ? `${selectedApelacion.redId?.nombre} (Solicitante: ${selectedApelacion.estudianteId?.correo})` 
+                      : `${selectedApelacion.nombre} (${selectedApelacion.correo})`
+                    }
+                  </p>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Motivo de la apelación</label>
@@ -179,7 +205,7 @@ const Apelaciones_Panel_Admin = () => {
                 disabled={resolviendo}
                 className="flex items-center gap-2 px-6 py-3 text-base font-bold bg-green-600 text-white hover:bg-green-500 rounded-lg shadow-lg shadow-green-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <MdCheck size={20} /> Aprobar (Reactivar)
+                <MdCheck size={20} /> Aprobar (Reactivar {selectedApelacion.tipo === 'red' ? 'Red' : 'Cuenta'})
               </button>
             </div>
           </div>
