@@ -23,12 +23,12 @@ const authService = {
   },
 
   verifyResetToken: async (token) => {
-    const response = await apiClient.get(`/recuperar-password/${token}`);
+    const response = await apiClient.get(`/recuperar-password-e/${token}`);
     return response.data;
   },
 
   resetPassword: async (token, passwords) => {
-    const response = await apiClient.post(`/nuevo-password/${token}`, passwords);
+    const response = await apiClient.post(`/nuevo-password-e/${token}`, passwords);
     return response.data;
   },
   confirmarCuenta: async (token) => {

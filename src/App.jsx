@@ -50,7 +50,7 @@ function App() {
 
 
         <Route path="forgot" element={<Forgot />} />
-        <Route path="recuperarpassword" element={<Reset />} />
+        <Route path="recuperarpassword-e" element={<Reset />} />
         <Route path="confirmar-cuenta/:token" element={<ConfirmarCuenta />} />
         <Route path="crearApelacion" element={<ApelarPage/>}/>
 
