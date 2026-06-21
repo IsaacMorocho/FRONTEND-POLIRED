@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
 import authService from '../services/authService';
 import { useForm } from 'react-hook-form';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
@@ -18,8 +18,9 @@ const COMMON_PASSWORDS = new Set([
 
 const RecuperarPasswordSP = () => {
   const navigate = useNavigate();
+  const { token: tokenParam } = useParams();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const token = tokenParam || searchParams.get('token');
   const isDev = searchParams.get('dev') === 'true';
 
   const [step, setStep] = useState('initial');
