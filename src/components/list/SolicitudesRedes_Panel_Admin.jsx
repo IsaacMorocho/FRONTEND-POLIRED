@@ -29,6 +29,7 @@ const SolicitudesRedesPanelAdmin = () => {
   };
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [resolverLoading, setResolverLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,6 +66,7 @@ const SolicitudesRedesPanelAdmin = () => {
 
   // Acciones
   const handleResolverSolicitud = async (id, accion, subtype) => {
+    setResolverLoading(true);
     try {
       if (subtype === 'verificacion') {
         await superadminService.resolverSolicitudVerificacion(id, { estado: accion });
@@ -77,10 +79,13 @@ const SolicitudesRedesPanelAdmin = () => {
     } catch (error) {
       toast.error(error.response?.data?.msg || "Error al procesar la solicitud");
       console.error(error);
+    } finally {
+      setResolverLoading(false);
     }
   };
 
   const handleResolverReporte = async (id, estado) => {
+    setResolverLoading(true);
     try {
       await superadminService.resolverReporteRed(id, { estado });
       toast.success(`Reporte de Red ${estado}`);
@@ -89,6 +94,8 @@ const SolicitudesRedesPanelAdmin = () => {
     } catch (error) {
       toast.error(error.response?.data?.msg || "Error al resolver el reporte");
       console.error(error);
+    } finally {
+      setResolverLoading(false);
     }
   };
 
@@ -437,6 +444,7 @@ const SolicitudesRedesPanelAdmin = () => {
                 {(!modalDetalles.item?.estado || (modalDetalles.item.estado).toLowerCase() === 'pendiente') && (
                   <>
                     <button
+                      disabled={resolverLoading}
                       onClick={() => {
                         if (activeTab === 'reportes') handleResolverReporte(modalDetalles.item._id, 'Resuelta');
                         else {
@@ -447,7 +455,7 @@ const SolicitudesRedesPanelAdmin = () => {
                           handleResolverSolicitud(modalDetalles.item._id, actionMap[activeTab], activeTab);
                         }
                       }}
-                      className="w-full flex flex-col items-center justify-center gap-0.5 bg-green-600 hover:bg-green-500 text-white py-2 rounded-xl transition shadow-lg shadow-green-900/20"
+                      className="w-full flex flex-col items-center justify-center gap-0.5 bg-green-600 hover:bg-green-500 text-white py-2 rounded-xl transition shadow-lg shadow-green-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <div className="flex items-center gap-2 font-bold">
                         <MdCheckCircle size={20} /> {activeTab === 'reportes' ? 'Aceptar Reporte' : 'Aprobar Solicitud'}
@@ -457,6 +465,7 @@ const SolicitudesRedesPanelAdmin = () => {
                       )}
                     </button>
                     <button
+                      disabled={resolverLoading}
                       onClick={() => {
                         if (activeTab === 'reportes') handleResolverReporte(modalDetalles.item._id, 'Rechazada');
                         else {
@@ -467,7 +476,7 @@ const SolicitudesRedesPanelAdmin = () => {
                           handleResolverSolicitud(modalDetalles.item._id, actionMap[activeTab], activeTab);
                         }
                       }}
-                      className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-red-900/20"
+                      className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <MdCancel size={20} /> Rechazar
                     </button>

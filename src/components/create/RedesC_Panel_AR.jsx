@@ -138,7 +138,7 @@ const RedesC_Panel_AR = () => {
                     )}
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold text-white mb-2">¡Hola, {user?.nombre || 'Usuario'}! 👋</h2>
+                    <h2 className="text-3xl font-bold text-white mb-2">¡Hola, {user?.nombre || 'Usuario'}!</h2>
                     <p className="text-slate-300 text-lg mb-4">
                       Eres administrador de la red comunitaria <span className="font-semibold text-emerald-400">{red.nombre}</span>.
                     </p>
@@ -160,7 +160,7 @@ const RedesC_Panel_AR = () => {
               {/* Tarjeta de Estadísticas */}
               <div className="bg-slate-800/80 backdrop-blur rounded-2xl p-6 border border-slate-700 flex flex-col justify-center shadow-xl">
                 <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                  Estadísticas
+                  Estadísticas de tu red
                 </h3>
                 <div className="space-y-4">
                   <div className="bg-slate-900/50 p-5 rounded-xl border border-slate-700/50 flex items-center justify-between">

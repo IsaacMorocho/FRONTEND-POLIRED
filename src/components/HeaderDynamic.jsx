@@ -16,6 +16,31 @@ const HeaderDynamic = () => {
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
+  const handleLinkClick = (e, href) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    
+    const targetElement = document.querySelector(href);
+    if (targetElement) {
+      let headerOffset = 64; // base móvil (h-16)
+      if (window.innerWidth >= 1024) {
+        headerOffset = 112; // lg (h-28)
+      } else if (window.innerWidth >= 768) {
+        headerOffset = 96;  // md (h-24)
+      } else if (window.innerWidth >= 640) {
+        headerOffset = 80;  // sm (h-20)
+      }
+
+      const elementPosition = targetElement.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   // Animaciones suaves basadas en scrollY (no en estado boolean)
   const headerBlurValue = useTransform(scrollY, [0, 100], [0, 8]);
   const headerBlur = useTransform(headerBlurValue, (v) => `blur(${v}px)`);
@@ -89,6 +114,7 @@ const HeaderDynamic = () => {
                     <li key={link.href}>
                       <a
                         href={link.href}
+                        onClick={(e) => handleLinkClick(e, link.href)}
                         className="font-bold text-white text-sm lg:text-base hover:text-purple-400 transition-colors duration-200"
                       >
                         {link.label}
@@ -141,7 +167,7 @@ const HeaderDynamic = () => {
                       <li key={link.href}>
                         <a
                           href={link.href}
-                          onClick={closeMobileMenu}
+                          onClick={(e) => handleLinkClick(e, link.href)}
                           className="block font-bold text-white text-sm py-2.5 px-2 rounded-lg hover:bg-white/10 hover:text-purple-400 transition-colors"
                         >
                           {link.label}

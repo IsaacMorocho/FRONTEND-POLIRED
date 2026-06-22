@@ -21,6 +21,7 @@ const Login = () => {
   const [forgotEmail, setForgotEmail] = useState('')
   const [recoveryLoading, setRecoveryLoading] = useState(false)
   const [recoveryEmailSent, setRecoveryEmailSent] = useState(false)
+  const [loginLoading, setLoginLoading] = useState(false)
   
   const { register, handleSubmit, formState: { errors } } = useForm()
   const { login } = useContext(AuthContext)
@@ -29,6 +30,7 @@ const Login = () => {
     const email = (data.email || '').trim()
     const password = data.password
 
+    setLoginLoading(true)
     try {
       let response;
       
@@ -87,6 +89,8 @@ const Login = () => {
       } else {
         toast.error(err.response?.data?.msg || 'Error al iniciar sesión');
       }
+    } finally {
+      setLoginLoading(false)
     }
   }
 
@@ -362,6 +366,7 @@ const Login = () => {
             {/* Submit Button */}
             <button
               type="submit"
+              disabled={loginLoading}
               className="
                 w-full
                 h-14
@@ -377,9 +382,12 @@ const Login = () => {
                 shadow-lg 
                 hover:shadow-2xl 
                 hover:scale-[1.02]
+                disabled:opacity-50
+                disabled:cursor-not-allowed
+                disabled:hover:scale-100
               "
             >
-              INGRESAR
+              {loginLoading ? 'INGRESANDO...' : 'INGRESAR'}
             </button>
           </form>
 

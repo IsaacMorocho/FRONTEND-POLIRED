@@ -10,6 +10,7 @@ const ReportesSolicitudesAR = () => {
   const [solicitudesVerificacion, setSolicitudesVerificacion] = useState([]);
   const [solicitudesRehabilitacion, setSolicitudesRehabilitacion] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [resolviendo, setResolviendo] = useState(false);
   
   // Filtros de la barra lateral
   const [vistaSeleccionada, setVistaSeleccionada] = useState('reportes'); // 'reportes', 'verificacion', 'rehabilitacion'
@@ -83,6 +84,7 @@ const ReportesSolicitudesAR = () => {
 
   // Acciones
   const handleResolverReporte = async (reporteId, estado) => {
+    setResolviendo(true);
     try {
       await adminRedService.resolverReporte(reporteId, { estado });
       const nuevoEstado = estado.toLowerCase() === 'resuelta' ? 'resuelto' : estado.toLowerCase();
@@ -108,6 +110,8 @@ const ReportesSolicitudesAR = () => {
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error al resolver el reporte");
+    } finally {
+      setResolviendo(false);
     }
   };
 
@@ -534,13 +538,15 @@ const ReportesSolicitudesAR = () => {
                           <div className="flex flex-row md:flex-col gap-2 md:gap-3">
                             <button
                               onClick={() => handleResolverReporte(modalDetalles.item._id, 'resuelto')}
-                              className="flex-1 w-full flex items-center justify-center gap-1 md:gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 md:py-3 rounded-xl transition shadow-lg shadow-green-900/20 text-xs md:text-base"
+                              disabled={resolviendo}
+                              className="flex-1 w-full flex items-center justify-center gap-1 md:gap-2 bg-green-600 hover:bg-green-500 text-white font-bold py-2 md:py-3 rounded-xl transition shadow-lg shadow-green-900/20 text-xs md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               <MdCheckCircle className="w-4 h-4 md:w-5 md:h-5" /> Aceptar
                             </button>
                             <button
                               onClick={() => handleResolverReporte(modalDetalles.item._id, 'rechazado')}
-                              className="flex-1 w-full flex items-center justify-center gap-1 md:gap-2 bg-red-600 hover:bg-red-500 text-white font-bold py-2 md:py-3 rounded-xl transition shadow-lg shadow-red-900/20 text-xs md:text-base"
+                              disabled={resolviendo}
+                              className="flex-1 w-full flex items-center justify-center gap-1 md:gap-2 bg-red-600 hover:bg-red-500 text-white font-bold py-2 md:py-3 rounded-xl transition shadow-lg shadow-red-900/20 text-xs md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               <MdCancel className="w-4 h-4 md:w-5 md:h-5" /> Rechazar
                             </button>

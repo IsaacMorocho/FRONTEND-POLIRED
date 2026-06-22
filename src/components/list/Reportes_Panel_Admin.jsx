@@ -9,6 +9,7 @@ const ReportesPanelAdmin = () => {
   const [activeTab, setActiveTab] = useState('app'); // 'app', 'usuarios'
   const [dataList, setDataList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [resolviendo, setResolviendo] = useState(false);
   
   // Filtros de la barra lateral
   const [estadoSeleccionado, setEstadoSeleccionado] = useState('pendiente'); // 'pendiente', 'resuelto', 'rechazado'
@@ -53,6 +54,7 @@ const ReportesPanelAdmin = () => {
 
   // Acciones
   const handleResolverApp = async (id, estado) => {
+    setResolviendo(true);
     try {
       await superadminService.resolverReporteApp(id, { estado });
       toast.success(`Reporte de App ${estado}`);
@@ -61,10 +63,13 @@ const ReportesPanelAdmin = () => {
     } catch (error) {
       toast.error("Error al resolver el reporte");
       console.error(error);
+    } finally {
+      setResolviendo(false);
     }
   };
 
   const handleResolverUsuario = async (id, estado) => {
+    setResolviendo(true);
     try {
       await superadminService.resolverReporteUsuario(id, { estado });
       toast.success(`Reporte de Usuario ${estado}`);
@@ -73,6 +78,8 @@ const ReportesPanelAdmin = () => {
     } catch (error) {
       toast.error(error.response?.data?.msg || "Error al resolver el reporte");
       console.error(error);
+    } finally {
+      setResolviendo(false);
     }
   };
 
@@ -461,7 +468,8 @@ const ReportesPanelAdmin = () => {
                   <div className="flex gap-3 pt-2">
                     <button
                       onClick={() => handleResolverApp(modalDetalles.item._id, 'resuelto')}
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-xl transition flex flex-col items-center justify-center gap-0.5"
+                      disabled={resolviendo}
+                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-xl transition flex flex-col items-center justify-center gap-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <div className="flex items-center gap-2 font-semibold">
                         <MdCheckCircle size={20} /> Aceptar Reporte
@@ -470,7 +478,8 @@ const ReportesPanelAdmin = () => {
                     </button>
                     <button
                       onClick={() => handleResolverApp(modalDetalles.item._id, 'rechazado')}
-                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-semibold transition flex items-center justify-center gap-2"
+                      disabled={resolviendo}
+                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-semibold transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <MdCancel size={20} /> Rechazar
                     </button>
@@ -481,7 +490,8 @@ const ReportesPanelAdmin = () => {
                   <div className="flex gap-3 pt-2">
                     <button
                       onClick={() => handleResolverUsuario(modalDetalles.item._id, 'resuelto')}
-                      className="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-xl transition flex flex-col items-center justify-center gap-0.5"
+                      disabled={resolviendo}
+                      className="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-xl transition flex flex-col items-center justify-center gap-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <div className="flex items-center gap-2 font-semibold">
                         <MdCheckCircle size={20} /> Aceptar Reporte
@@ -490,7 +500,8 @@ const ReportesPanelAdmin = () => {
                     </button>
                     <button
                       onClick={() => handleResolverUsuario(modalDetalles.item._id, 'rechazado')}
-                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-semibold transition flex items-center justify-center gap-2"
+                      disabled={resolviendo}
+                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-semibold transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <MdCancel size={20} /> Desestimar
                     </button>
