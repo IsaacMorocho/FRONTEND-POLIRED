@@ -8,12 +8,12 @@ import adminRedService from "../../services/adminRedService";
 const ReportesSolicitudesAR = () => {
   const [reportes, setReportes] = useState([]);
   const [solicitudesVerificacion, setSolicitudesVerificacion] = useState([]);
-  const [solicitudesRehabilitacion, setSolicitudesRehabilitacion] = useState([]);
+  const [solicitudesoficializacion, setSolicitudesoficializacion] = useState([]);
   const [loading, setLoading] = useState(false);
   const [resolviendo, setResolviendo] = useState(false);
   
   // Filtros de la barra lateral
-  const [vistaSeleccionada, setVistaSeleccionada] = useState('reportes'); // 'reportes', 'verificacion', 'rehabilitacion'
+  const [vistaSeleccionada, setVistaSeleccionada] = useState('reportes'); // 'reportes', 'verificacion', 'oficializacion'
   const [estadoSeleccionado, setEstadoSeleccionado] = useState('pendiente'); // 'pendiente', 'resuelto', 'rechazado'
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('Todas');
 
@@ -58,11 +58,11 @@ const ReportesSolicitudesAR = () => {
     }
   };
 
-  const fetchSolicitudesRehabilitacion = async () => {
+  const fetchSolicitudesoficializacion = async () => {
     setLoading(true);
     try {
-      const data = await adminRedService.getSolicitudesRehabilitacion();
-      setSolicitudesRehabilitacion(Array.isArray(data) ? data : data.solicitudes || []);
+      const data = await adminRedService.getSolicitudesoficializacion();
+      setSolicitudesoficializacion(Array.isArray(data) ? data : data.solicitudes || []);
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -73,7 +73,7 @@ const ReportesSolicitudesAR = () => {
   useEffect(() => {
     if (vistaSeleccionada === 'reportes') fetchReportes();
     else if (vistaSeleccionada === 'verificacion') fetchSolicitudesVerificacion();
-    else if (vistaSeleccionada === 'oficialización') fetchSolicitudesRehabilitacion();
+    else if (vistaSeleccionada === 'oficialización') fetchSolicitudesoficializacion();
     setPaginaActual(1); // Reset page on view change
   }, [vistaSeleccionada]);
 
@@ -144,7 +144,7 @@ const ReportesSolicitudesAR = () => {
       return true;
     });
   } else if (vistaSeleccionada === 'oficialización') {
-    itemsMostrados = solicitudesRehabilitacion.filter(s => {
+    itemsMostrados = solicitudesoficializacion.filter(s => {
       const estado = (s.estado || '').toLowerCase();
       if (estadoSeleccionado === 'pendiente') return estado === 'pendiente' || !estado;
       if (estadoSeleccionado === 'resuelto') return ['aprobado', 'aprobada', 'resuelto', 'resuelta'].includes(estado);
@@ -188,7 +188,7 @@ const ReportesSolicitudesAR = () => {
             {[
               { id: 'reportes', label: 'Reportes', icon: MdWarning },
               { id: 'verificacion', label: 'Verificación', icon: MdPendingActions },
-              { id: 'rehabilitacion', label: 'Rehabilitación', icon: MdAssignmentTurnedIn },
+              { id: 'oficializacion', label: 'Oficialización', icon: MdAssignmentTurnedIn },
             ].map(opt => (
               <label key={opt.id} className="flex items-center gap-3 cursor-pointer group">
                 <div className="relative flex items-center justify-center w-5 h-5">
