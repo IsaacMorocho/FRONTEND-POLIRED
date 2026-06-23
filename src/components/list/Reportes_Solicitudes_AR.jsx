@@ -73,7 +73,7 @@ const ReportesSolicitudesAR = () => {
   useEffect(() => {
     if (vistaSeleccionada === 'reportes') fetchReportes();
     else if (vistaSeleccionada === 'verificacion') fetchSolicitudesVerificacion();
-    else if (vistaSeleccionada === 'rehabilitacion') fetchSolicitudesRehabilitacion();
+    else if (vistaSeleccionada === 'oficialización') fetchSolicitudesRehabilitacion();
     setPaginaActual(1); // Reset page on view change
   }, [vistaSeleccionada]);
 
@@ -143,7 +143,7 @@ const ReportesSolicitudesAR = () => {
       if (estadoSeleccionado === 'rechazado') return ['rechazado', 'rechazada'].includes(estado);
       return true;
     });
-  } else if (vistaSeleccionada === 'rehabilitacion') {
+  } else if (vistaSeleccionada === 'oficialización') {
     itemsMostrados = solicitudesRehabilitacion.filter(s => {
       const estado = (s.estado || '').toLowerCase();
       if (estadoSeleccionado === 'pendiente') return estado === 'pendiente' || !estado;
@@ -599,7 +599,6 @@ const ReportesSolicitudesAR = () => {
                   </div>
                 </div>
 
-                {/* Acciones para otros tipos de solicitudes si es necesario (el código original no mostraba acciones para 'verificacion' o 'rehabilitacion' en el modal, solo visualizar) */}
               </>
             )}
           </motion.div>
