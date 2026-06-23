@@ -67,8 +67,8 @@ const adminRedService = {
     return response.data;
   },
 
-  getSolicitudesRehabilitacion: async () => {
-    const response = await apiClient.get('/solicitudes/rehabilitar_red');
+  getSolicitudesoficializacion: async () => {
+    const response = await apiClient.get('/solicitudes/oficializacion');
     return response.data;
   },
 

@@ -73,7 +73,7 @@ const ReportesSolicitudesAR = () => {
   useEffect(() => {
     if (vistaSeleccionada === 'reportes') fetchReportes();
     else if (vistaSeleccionada === 'verificacion') fetchSolicitudesVerificacion();
-    else if (vistaSeleccionada === 'oficialización') fetchSolicitudesoficializacion();
+    else if (vistaSeleccionada === 'oficializacion') fetchSolicitudesoficializacion();
     setPaginaActual(1); // Reset page on view change
   }, [vistaSeleccionada]);
 
@@ -294,7 +294,7 @@ const ReportesSolicitudesAR = () => {
                 {itemsPaginados.map((item, idx) => {
                   // Extraer datos comunes para la tarjeta
                   const isReporte = vistaSeleccionada === 'reportes';
-                  const titulo = isReporte ? item.tipo : (vistaSeleccionada === 'verificacion' ? 'Solicitud de Verificación' : 'Solicitud de Rehabilitación');
+                  const titulo = isReporte ? item.tipo : (vistaSeleccionada === 'verificacion' ? 'Solicitud de Verificación' : 'Solicitud de Oficialización');
                   const desc = item.descripcion || 'Sin descripción';
                   const isResolved = ['Aprobada', 'resuelto', 'Resuelta'].includes(item.estado);
                   const isRejected = ['Rechazada', 'rechazado'].includes(item.estado);
