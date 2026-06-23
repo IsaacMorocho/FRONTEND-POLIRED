@@ -42,9 +42,9 @@ const Dashboard = () => {
   const navItems = [
     { path: '/dashboard/redes', label: 'Redes Comunitarias', icon: MdPublic },
     { path: '/dashboard/estudiantes', label: 'Usuarios', icon: FiUsers },
-    { path: '/dashboard/red-global', label: 'Red Global', icon: MdPublic },
-    { path: '/dashboard/reportes', label: 'Reportes', icon: MdWarning },
-    { path: '/dashboard/solicitudes', label: 'Solicitudes', icon: MdPeople },
+    { path: '/dashboard/red-global', label: 'Reportes de Red Global', icon: MdPublic },
+    { path: '/dashboard/reportes', label: 'Reportes Generales', icon: MdWarning },
+    { path: '/dashboard/solicitudes', label: 'Apertura de redes', icon: MdPeople },
     { path: '/dashboard/solicitudes-redes', label: 'Solicitudes de Redes', icon: MdAssignmentTurnedIn },
     { path: '/dashboard/apelaciones', label: 'Apelaciones', icon: MdWarning },
   ];
