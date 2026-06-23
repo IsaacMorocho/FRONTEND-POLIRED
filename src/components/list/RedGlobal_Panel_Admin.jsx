@@ -90,8 +90,8 @@ const RedGlobalPanelAdmin = () => {
   let filtrados = dataList.filter(r => {
     const estado = (r.estado || r.estadoAprobacion || '').toLowerCase();
     if (estadoSeleccionado === 'pendiente') return estado === 'pendiente';
-    if (estadoSeleccionado === 'resuelto') return ['aprobada', 'resuelto', 'resuelta'].includes(estado);
-    if (estadoSeleccionado === 'rechazado') return ['rechazada', 'rechazado'].includes(estado);
+    if (estadoSeleccionado === 'resuelto') return ['aprobado', 'aprobada', 'resuelto', 'resuelta'].includes(estado);
+    if (estadoSeleccionado === 'rechazado') return ['rechazado', 'rechazada'].includes(estado);
     return true;
   });
 

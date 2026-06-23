@@ -122,9 +122,10 @@ const ReportesSolicitudesAR = () => {
   if (vistaSeleccionada === 'reportes') {
     // Normalizar estados para filtrado
     let filtrados = reportes.filter(r => {
-      if (estadoSeleccionado === 'pendiente') return r.estado === 'pendiente';
-      if (estadoSeleccionado === 'resuelto') return ['Aprobada', 'resuelto', 'Resuelta'].includes(r.estado);
-      if (estadoSeleccionado === 'rechazado') return ['Rechazada', 'rechazado'].includes(r.estado);
+      const estado = (r.estado || '').toLowerCase();
+      if (estadoSeleccionado === 'pendiente') return estado === 'pendiente';
+      if (estadoSeleccionado === 'resuelto') return ['aprobado', 'aprobada', 'resuelto', 'resuelta'].includes(estado);
+      if (estadoSeleccionado === 'rechazado') return ['rechazado', 'rechazada'].includes(estado);
       return true;
     });
 
@@ -136,16 +137,18 @@ const ReportesSolicitudesAR = () => {
     itemsMostrados = filtrados;
   } else if (vistaSeleccionada === 'verificacion') {
     itemsMostrados = solicitudesVerificacion.filter(s => {
-      if (estadoSeleccionado === 'pendiente') return s.estado === 'pendiente' || !s.estado;
-      if (estadoSeleccionado === 'resuelto') return s.estado === 'Aprobada';
-      if (estadoSeleccionado === 'rechazado') return s.estado === 'Rechazada';
+      const estado = (s.estado || '').toLowerCase();
+      if (estadoSeleccionado === 'pendiente') return estado === 'pendiente' || !estado;
+      if (estadoSeleccionado === 'resuelto') return ['aprobado', 'aprobada', 'resuelto', 'resuelta'].includes(estado);
+      if (estadoSeleccionado === 'rechazado') return ['rechazado', 'rechazada'].includes(estado);
       return true;
     });
   } else if (vistaSeleccionada === 'rehabilitacion') {
     itemsMostrados = solicitudesRehabilitacion.filter(s => {
-      if (estadoSeleccionado === 'pendiente') return s.estado === 'pendiente' || !s.estado;
-      if (estadoSeleccionado === 'resuelto') return s.estado === 'Aprobada';
-      if (estadoSeleccionado === 'rechazado') return s.estado === 'Rechazada';
+      const estado = (s.estado || '').toLowerCase();
+      if (estadoSeleccionado === 'pendiente') return estado === 'pendiente' || !estado;
+      if (estadoSeleccionado === 'resuelto') return ['aprobado', 'aprobada', 'resuelto', 'resuelta'].includes(estado);
+      if (estadoSeleccionado === 'rechazado') return ['rechazado', 'rechazada'].includes(estado);
       return true;
     });
   }
