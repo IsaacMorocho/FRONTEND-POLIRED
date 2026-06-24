@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { FiAlertCircle, FiCalendar, FiChevronLeft, FiChevronRight, FiX, FiShield, FiStar, FiRefreshCw, FiAlertOctagon } from "react-icons/fi";
+import { FiAlertCircle, FiCalendar, FiChevronLeft, FiChevronRight, FiX, FiShield, FiStar, FiUserMinus } from "react-icons/fi";
 import { MdFilterList, MdAssignmentTurnedIn, MdCheckCircle, MdCancel } from "react-icons/md";
 import { motion, AnimatePresence } from 'framer-motion';
 import superadminService from "../../services/superadminService";
 
 const SolicitudesRedesPanelAdmin = () => {
-  const [activeTab, setActiveTab] = useState('verificacion'); // 'verificacion', 'oficializacion', 'reportes'
+  const [activeTab, setActiveTab] = useState('verificacion'); // 'verificacion', 'oficializacion', 'revocacion'
   const [dataList, setDataList] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+  const [paginationMeta, setPaginationMeta] = useState(null);
+
   // Filtros de la barra lateral
   const [estadoSeleccionado, setEstadoSeleccionado] = useState('pendiente'); // 'pendiente', 'resuelto', 'rechazado'
 
@@ -18,32 +19,43 @@ const SolicitudesRedesPanelAdmin = () => {
   // Paginación
   const [paginaActual, setPaginaActual] = useState(1);
   const itemsPorPagina = 6;
-  const API_BASE = import.meta.env.VITE_BACKEND_URL;
-
-  const getPicUrl = (path) => {
-    if (!path || path === 'null' || path === 'undefined') return null;
-    if (path.startsWith('http') || path.startsWith('data:')) return path;
-    const cleanPath = path.replace(/\\/g, '/');
-    const base = API_BASE?.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
-    return `${base}${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
-  };
-
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [resolverLoading, setResolverLoading] = useState(false);
+
+  const mapEstadoQuery = (estado) => {
+    if (estado === 'resuelto') return 'aprobada';
+    if (estado === 'rechazado') return 'rechazada';
+    return estado;
+  };
+
+  const getSolicitudRedId = (item) => {
+    const redCandidate = item?.redId || item?.red || item?.redComunitaria || item?.meta?.redId || item?.meta?.red || item?.meta?.redComunitaria;
+    if (typeof redCandidate === 'object' && redCandidate !== null) return redCandidate._id || redCandidate.id;
+    return redCandidate || item?.red || item?.meta?.redId;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        setPaginationMeta(null);
         if (activeTab === 'verificacion') {
           const data = await superadminService.getSolicitudes('verificacion');
           setDataList(data.solicitudes || []);
         } else if (activeTab === 'oficializacion') {
           const data = await superadminService.getSolicitudes('oficializacion');
           setDataList(data.solicitudes || []);
-        } else if (activeTab === 'reportes') {
-          const data = await superadminService.getReportes('red');
-          setDataList(data.reportes || []);
+        } else if (activeTab === 'revocacion') {
+          const data = await superadminService.getSolicitudesRevocacionAdminRed({
+            estado: mapEstadoQuery(estadoSeleccionado),
+            page: paginaActual,
+            limit: itemsPorPagina,
+          });
+          setDataList(data.solicitudes || data.solicitudesRevocacion || data.docs || data.data || []);
+          setPaginationMeta(data.pagination || data.meta || {
+            total: data.totalDocs || data.total || data.totalSolicitudes,
+            totalPages: data.totalPages || data.pages,
+          });
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -54,10 +66,15 @@ const SolicitudesRedesPanelAdmin = () => {
     };
 
     fetchData();
-    // Reset filters when tab changes
+    if (activeTab !== 'revocacion') {
+      setPaginationMeta(null);
+    }
+  }, [activeTab, refreshTrigger, estadoSeleccionado, paginaActual]);
+
+  useEffect(() => {
     setEstadoSeleccionado('pendiente');
     setPaginaActual(1);
-  }, [activeTab, refreshTrigger]);
+  }, [activeTab]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -84,11 +101,19 @@ const SolicitudesRedesPanelAdmin = () => {
     }
   };
 
-  const handleResolverReporte = async (id, estado) => {
+  const handleResolverRevocacion = async (item, accion) => {
     setResolverLoading(true);
     try {
-      await superadminService.resolverReporteRed(id, { estado });
-      toast.success(`Reporte de Red ${estado}`);
+      const redId = getSolicitudRedId(item);
+      if (!redId) {
+        toast.error("No se pudo identificar la red asociada a la solicitud");
+        return;
+      }
+      await superadminService.resolverSolicitudRevocarAdminRed(redId, {
+        accion,
+        respuesta: accion === 'Aprobar' ? 'Te he revocado el rol' : 'No se aprobó la revocación del rol',
+      });
+      toast.success(`Solicitud de revocación ${accion === 'Aprobar' ? 'aprobada' : 'rechazada'}`);
       setModalDetalles({ visible: false, item: null });
       setRefreshTrigger(prev => prev + 1);
     } catch (error) {
@@ -103,7 +128,7 @@ const SolicitudesRedesPanelAdmin = () => {
   let itemsMostrados = [];
 
   // Normalizar estados para filtrado
-  let filtrados = dataList.filter(r => {
+  let filtrados = activeTab === 'revocacion' ? dataList : dataList.filter(r => {
     const estado = (r.estado || '').toLowerCase();
     if (estadoSeleccionado === 'pendiente') return estado === 'pendiente';
     if (estadoSeleccionado === 'resuelto') return ['aprobado', 'aprobada', 'resuelto', 'resuelta'].includes(estado);
@@ -113,8 +138,13 @@ const SolicitudesRedesPanelAdmin = () => {
 
   itemsMostrados = filtrados;
 
-  const totalPaginas = Math.ceil(itemsMostrados.length / itemsPorPagina);
-  const itemsPaginados = itemsMostrados.slice((paginaActual - 1) * itemsPorPagina, paginaActual * itemsPorPagina);
+  const totalBackend = paginationMeta?.total || paginationMeta?.totalDocs || paginationMeta?.totalSolicitudes;
+  const totalPaginas = activeTab === 'revocacion'
+    ? (paginationMeta?.totalPages || paginationMeta?.pages || Math.ceil((totalBackend || itemsMostrados.length) / itemsPorPagina) || 1)
+    : Math.ceil(itemsMostrados.length / itemsPorPagina);
+  const itemsPaginados = activeTab === 'revocacion'
+    ? itemsMostrados
+    : itemsMostrados.slice((paginaActual - 1) * itemsPorPagina, paginaActual * itemsPorPagina);
 
   const resetFiltros = () => {
     setEstadoSeleccionado('pendiente');
@@ -124,7 +154,7 @@ const SolicitudesRedesPanelAdmin = () => {
   const getTabTitle = () => {
     if (activeTab === 'verificacion') return 'Solicitudes de Verificación';
     if (activeTab === 'oficializacion') return 'Solicitudes de Oficialización';
-    if (activeTab === 'reportes') return 'Reportes de Redes';
+    if (activeTab === 'revocacion') return 'Solicitudes de Revocación de Rol';
     return '';
   };
 
@@ -145,16 +175,16 @@ const SolicitudesRedesPanelAdmin = () => {
           <FiStar size={18} /> Oficialización
         </button>
         <button
-          onClick={() => setActiveTab('reportes')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${activeTab === 'reportes' ? 'bg-red-600 text-white shadow-lg shadow-red-900/50' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+          onClick={() => setActiveTab('revocacion')}
+          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${activeTab === 'revocacion' ? 'bg-red-600 text-white shadow-lg shadow-red-900/50' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
         >
-          <FiAlertOctagon size={18} /> Reportes
+          <FiUserMinus size={18} /> Solicitudes de Revocación de Rol
         </button>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* ---------------- BARRA LATERAL (FILTROS) ---------------- */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="w-full lg:w-72 shrink-0 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col gap-8 shadow-xl lg:sticky lg:top-0 h-fit"
@@ -205,7 +235,7 @@ const SolicitudesRedesPanelAdmin = () => {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-white">{getTabTitle()}</h1>
             <div className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-slate-300 shrink-0">
-              Total: <span className="font-bold text-white">{itemsMostrados.length}</span>
+              Total: <span className="font-bold text-white">{totalBackend || itemsMostrados.length}</span>
             </div>
           </div>
 
@@ -228,13 +258,13 @@ const SolicitudesRedesPanelAdmin = () => {
                     let titulo = 'Solicitud de Red';
                     if (activeTab === 'verificacion') titulo = 'Solicitar Verificación';
                     if (activeTab === 'oficializacion') titulo = 'Solicitar Oficialización';
-                    if (activeTab === 'reportes') titulo = item.tipo || 'Reporte de Red';
-                    
+                    if (activeTab === 'revocacion') titulo = 'Solicitud de Revocación de Rol';
+
                     const desc = item.descripcion || (item.meta?.justificacion || 'Sin descripción');
                     const estadoItem = (item.estado || '').toLowerCase();
                     const isResolved = ['aprobada', 'resuelto', 'resuelta'].includes(estadoItem);
                     const isRejected = ['rechazada', 'rechazado'].includes(estadoItem);
-                    
+
                     return (
                       <motion.div
                         key={item._id || idx}
@@ -246,22 +276,20 @@ const SolicitudesRedesPanelAdmin = () => {
                         onClick={() => setModalDetalles({ visible: true, item })}
                       >
                         <div className="relative h-48 bg-slate-800 overflow-hidden shrink-0">
-                          <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${
-                            activeTab === 'verificacion' ? 'from-blue-900/50 to-cyan-900/50' : 
-                            activeTab === 'oficializacion' ? 'from-purple-900/50 to-pink-900/50' : 
-                            'from-red-900/50 to-orange-900/50'
-                          }`}>
+                          <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${activeTab === 'verificacion' ? 'from-blue-900/50 to-cyan-900/50' :
+                            activeTab === 'oficializacion' ? 'from-purple-900/50 to-pink-900/50' :
+                              'from-red-900/50 to-rose-900/50'
+                            }`}>
                             {activeTab === 'verificacion' && <FiShield size={64} className="text-white/10" />}
                             {activeTab === 'oficializacion' && <FiStar size={64} className="text-white/10" />}
-                            {activeTab === 'reportes' && <FiAlertOctagon size={64} className="text-white/10" />}
+                            {activeTab === 'revocacion' && <FiUserMinus size={64} className="text-white/10" />}
                           </div>
-                          
+
                           <div className="absolute top-4 left-4">
-                            <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg ${
-                              isResolved ? 'bg-green-600 text-white' :
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg ${isResolved ? 'bg-green-600 text-white' :
                               isRejected ? 'bg-red-600 text-white' :
-                              'bg-yellow-600 text-white'
-                            }`}>
+                                'bg-yellow-600 text-white'
+                              }`}>
                               {item.estado ? item.estado.toUpperCase() : 'PENDIENTE'}
                             </span>
                           </div>
@@ -269,7 +297,7 @@ const SolicitudesRedesPanelAdmin = () => {
 
                         <div className="p-5 flex-1 flex flex-col">
                           <h3 className="text-xl font-bold text-white mb-2 line-clamp-1">{titulo}</h3>
-                          
+
                           <div className="flex items-start gap-2 text-slate-400 text-sm mb-4">
                             <FiAlertCircle className="mt-1 shrink-0" />
                             <p className="line-clamp-2">{desc}</p>
@@ -294,7 +322,7 @@ const SolicitudesRedesPanelAdmin = () => {
                   <div className="flex items-center gap-2 text-sm text-slate-400">
                     <span>Mostrando Resultados:</span>
                     <span className="px-3 py-1 bg-slate-800 rounded-full text-slate-300 font-medium border border-slate-700">
-                      {(paginaActual - 1) * itemsPorPagina + 1} - {Math.min(paginaActual * itemsPorPagina, itemsMostrados.length)} de {itemsMostrados.length}
+                      {(paginaActual - 1) * itemsPorPagina + 1} - {Math.min(paginaActual * itemsPorPagina, totalBackend || itemsMostrados.length)} de {totalBackend || itemsMostrados.length}
                     </span>
                   </div>
 
@@ -306,17 +334,16 @@ const SolicitudesRedesPanelAdmin = () => {
                     >
                       <FiChevronLeft size={18} /> Anterior
                     </button>
-                    
+
                     <div className="flex items-center gap-2">
                       {Array.from({ length: totalPaginas || 1 }, (_, i) => i + 1).map(pageNum => (
                         <button
                           key={pageNum}
                           onClick={() => setPaginaActual(pageNum)}
-                          className={`w-10 h-10 flex items-center justify-center rounded-xl text-base font-medium transition ${
-                            paginaActual === pageNum 
-                              ? 'border border-slate-600 text-blue-400' 
-                              : 'text-slate-400 hover:text-white'
-                          }`}
+                          className={`w-10 h-10 flex items-center justify-center rounded-xl text-base font-medium transition ${paginaActual === pageNum
+                            ? 'border border-slate-600 text-blue-400'
+                            : 'text-slate-400 hover:text-white'
+                            }`}
                         >
                           {pageNum}
                         </button>
@@ -357,46 +384,14 @@ const SolicitudesRedesPanelAdmin = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center bg-slate-800 p-4 rounded-xl border border-slate-700">
                   <span className="text-sm font-medium text-slate-400">Estado:</span>
-                  <span className={`text-sm font-bold ${
-                    ['aprobada', 'resuelto', 'resuelta'].includes((modalDetalles.item?.estado || '').toLowerCase()) ? 'text-green-400' :
+                  <span className={`text-sm font-bold ${['aprobada', 'resuelto', 'resuelta'].includes((modalDetalles.item?.estado || '').toLowerCase()) ? 'text-green-400' :
                     ['rechazada', 'rechazado'].includes((modalDetalles.item?.estado || '').toLowerCase()) ? 'text-red-400' : 'text-yellow-400'
-                  }`}>
+                    }`}>
                     {modalDetalles.item?.estado || 'Pendiente'}
                   </span>
                 </div>
-                
-                {/* Detalles extra según tab */}
-                {activeTab === 'reportes' && (
-                  <>
-                    {modalDetalles.item?.meta?.redId && (
-                      <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col sm:flex-row items-center gap-4">
-                        <img 
-                          src={getPicUrl(modalDetalles.item.meta.redId.fotoPerfil) || `https://ui-avatars.com/api/?name=${modalDetalles.item.meta.redId.nombre}&background=10b981&color=fff&size=64`}
-                          alt="Red Reportada"
-                          className="w-16 h-16 rounded-full border-2 border-slate-600 object-cover shrink-0"
-                        />
-                        <div className="text-center sm:text-left">
-                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">Red Reportada</span>
-                          <p className="text-white text-lg font-bold">{modalDetalles.item.meta.redId.nombre}</p>
-                          {modalDetalles.item.meta.redId.deshabilitada && (
-                            <span className="inline-block mt-1 px-2 py-0.5 bg-red-900/50 text-red-300 text-xs font-bold rounded border border-red-800">
-                              Deshabilitada actualmente
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                      <span className="text-sm font-medium text-slate-400 block mb-2">Tipo de Reporte:</span>
-                      <p className="text-white text-sm font-bold">{modalDetalles.item?.tipo}</p>
-                    </div>
-                    <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                      <span className="text-sm font-medium text-slate-400 block mb-2">Descripción:</span>
-                      <p className="text-white text-sm leading-relaxed break-words">{modalDetalles.item?.descripcion || 'Sin descripción'}</p>
-                    </div>
-                  </>
-                )}
 
+                {/* Detalles extra según tab */}
                 {activeTab === 'verificacion' && (
                   <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col gap-3">
                     <div>
@@ -435,10 +430,29 @@ const SolicitudesRedesPanelAdmin = () => {
                   </div>
                 )}
 
+                {activeTab === 'revocacion' && (
+                  <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col gap-3">
+                    <div>
+                      <span className="text-xs font-medium text-slate-400">Red asociada:</span>
+                      <p className="text-white text-sm break-words">{modalDetalles.item?.redId?.nombre || modalDetalles.item?.red?.nombre || modalDetalles.item?.meta?.redId?.nombre || modalDetalles.item?.meta?.nombreRed || getSolicitudRedId(modalDetalles.item) || 'No disponible'}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-slate-400">Solicitante:</span>
+                      <p className="text-white text-sm break-words">
+                        {modalDetalles.item?.solicitante?.nombre || modalDetalles.item?.adminRed?.nombre || modalDetalles.item?.usuario?.nombre || 'No disponible'} {modalDetalles.item?.solicitante?.apellido || modalDetalles.item?.adminRed?.apellido || modalDetalles.item?.usuario?.apellido || ''}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-slate-400">Descripción:</span>
+                      <p className="text-white text-sm break-words">{modalDetalles.item?.descripcion || modalDetalles.item?.meta?.descripcion || 'Sin descripción'}</p>
+                    </div>
+                  </div>
+                )}
+
 
               </div>
             </div>
-            
+
             <div className="p-6 border-t border-slate-800 bg-slate-900/80">
               <div className="flex flex-col gap-3">
                 {(!modalDetalles.item?.estado || (modalDetalles.item.estado).toLowerCase() === 'pendiente') && (
@@ -446,7 +460,7 @@ const SolicitudesRedesPanelAdmin = () => {
                     <button
                       disabled={resolverLoading}
                       onClick={() => {
-                        if (activeTab === 'reportes') handleResolverReporte(modalDetalles.item._id, 'Resuelta');
+                        if (activeTab === 'revocacion') handleResolverRevocacion(modalDetalles.item, 'Aprobar');
                         else {
                           const actionMap = {
                             'verificacion': 'Aprobada',
@@ -458,16 +472,16 @@ const SolicitudesRedesPanelAdmin = () => {
                       className="w-full flex flex-col items-center justify-center gap-0.5 bg-green-600 hover:bg-green-500 text-white py-2 rounded-xl transition shadow-lg shadow-green-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <div className="flex items-center gap-2 font-bold">
-                        <MdCheckCircle size={20} /> {activeTab === 'reportes' ? 'Aceptar Reporte' : 'Aprobar Solicitud'}
+                        <MdCheckCircle size={20} /> Aprobar Solicitud
                       </div>
-                      {activeTab === 'reportes' && (
-                        <span className="text-[10px] font-normal text-green-200 text-center leading-tight">Se otorgará un strike a la red reportada</span>
+                      {activeTab === 'revocacion' && (
+                        <span className="text-[10px] font-normal text-green-200 text-center leading-tight">Se revocará el rol de Admin de Red al solicitante</span>
                       )}
                     </button>
                     <button
                       disabled={resolverLoading}
                       onClick={() => {
-                        if (activeTab === 'reportes') handleResolverReporte(modalDetalles.item._id, 'Rechazada');
+                        if (activeTab === 'revocacion') handleResolverRevocacion(modalDetalles.item, 'Rechazar');
                         else {
                           const actionMap = {
                             'verificacion': 'Rechazada',

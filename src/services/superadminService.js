@@ -81,7 +81,7 @@ const superadminService = {
     return response.data;
   },
 
-  getSolicitudesRedes: async () => { 
+  getSolicitudesRedes: async () => {
     const response = await apiClient.get('/superadmin/redes/pendientes');
     return response.data;
   },
@@ -114,6 +114,11 @@ const superadminService = {
 
   getSolicitudes: async (subtype) => {
     const response = await apiClient.get(`/solicitudes/ver/${subtype}`);
+    return response.data;
+  },
+
+  getSolicitudesRevocacionAdminRed: async (params = {}) => {
+    const response = await apiClient.get('/solicitudes/ver/revocar_admin_red', { params });
     return response.data;
   },
 
@@ -154,6 +159,11 @@ const superadminService = {
 
   resolverSolicitudRehabilitar: async (id, data) => {
     const response = await apiClient.patch(`/superadmin/solicitudes/rehabilitar/${id}/resolver`, data);
+    return response.data;
+  },
+
+  resolverSolicitudRevocarAdminRed: async (redId, data) => {
+    const response = await apiClient.patch(`/red/${redId}/resolver/revocar-rol`, data);
     return response.data;
   },
 

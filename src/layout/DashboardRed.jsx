@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlLogout } from "react-icons/sl";
-import { MdPerson, MdPublic, MdMenu, MdClose, MdWarning, MdPeople, MdMoreVert } from 'react-icons/md';
+import { MdPerson, MdPublic, MdMenu, MdClose, MdWarning, MdPeople, MdMoreVert, MdPersonRemove } from 'react-icons/md';
 import { LuPanelLeftClose, LuPanelLeftOpen } from 'react-icons/lu';
 
 const DashboardRed = () => {
@@ -58,15 +58,16 @@ const DashboardRed = () => {
     { path: '/dashboardRed/redesAR', label: 'Mi red', icon: MdPublic },
     { path: '/dashboardRed/estudiantes', label: 'Miembros', icon: MdPeople },
     { path: '/dashboardRed/reportes', label: 'Reportes', icon: MdWarning },
+    { path: '/dashboardRed/revocar-rol', label: 'Revocar mi rol', icon: MdPersonRemove },
   ];
 
   const isActive = (path) => urlActual === path;
 
   return (
     <div className="flex h-screen bg-slate-950 overflow-hidden w-full max-w-[100vw]">
-      
+
       {/* Sidebar - Desktop */}
-      <motion.div 
+      <motion.div
         animate={{ width: isSidebarOpen ? 256 : 80 }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
         className="hidden md:flex flex-col bg-slate-900 border-r border-slate-800 shrink-0 z-30 relative"
@@ -99,17 +100,15 @@ const DashboardRed = () => {
                 <li key={path}>
                   <Link
                     to={path}
-                    className={`flex items-center gap-3 rounded-lg transition-all duration-200 group relative ${
-                      isSidebarOpen ? 'px-3 py-2.5' : 'justify-center p-3'
-                    } ${
-                      active
+                    className={`flex items-center gap-3 rounded-lg transition-all duration-200 group relative ${isSidebarOpen ? 'px-3 py-2.5' : 'justify-center p-3'
+                      } ${active
                         ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-blue-400'
                         : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                    }`}
+                      }`}
                   >
                     <Icon size={20} className={`shrink-0 ${active ? 'text-blue-400' : 'text-slate-400 group-hover:text-white'}`} />
                     {isSidebarOpen && <span className="font-medium text-sm truncate">{label}</span>}
-                    
+
                     {/* Tooltip for collapsed state */}
                     {!isSidebarOpen && (
                       <div className="absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl border border-slate-700">
@@ -126,7 +125,7 @@ const DashboardRed = () => {
         {/* Bottom Profile Area */}
         <div className="p-4 border-t border-slate-800 shrink-0 overflow-visible">
           <div className={`flex items-center ${isSidebarOpen ? 'gap-3' : 'justify-center'} relative`}>
-            
+
             {/* Si el sidebar esta colapsado, el avatar abre el menu. Si esta expandido, son los 3 puntos */}
             <button
               onClick={() => !isSidebarOpen && setSidebarDropdownOpen(!sidebarDropdownOpen)}
@@ -138,7 +137,7 @@ const DashboardRed = () => {
                 className="w-10 h-10 rounded-full object-cover border-2 border-slate-700 hover:border-slate-500 transition"
               />
             </button>
-            
+
             {isSidebarOpen && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-white truncate">{user?.nombre}</p>
@@ -147,7 +146,7 @@ const DashboardRed = () => {
             )}
 
             {isSidebarOpen && (
-              <button 
+              <button
                 onClick={() => setSidebarDropdownOpen(!sidebarDropdownOpen)}
                 className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 transition focus:outline-none"
               >
@@ -190,13 +189,13 @@ const DashboardRed = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-950 min-w-0 z-10 relative">
-        
+
         {/* Header */}
         <header className="relative z-40 h-16 flex items-center justify-between px-4 sm:px-6 border-b border-slate-800 bg-slate-900/50 backdrop-blur shrink-0 min-w-0">
-          
+
           {/* Left: Sidebar Toggle */}
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="hidden md:flex text-slate-400 hover:text-white transition-transform duration-200"
               title={isSidebarOpen ? "Cerrar menú" : "Abrir menú"}
@@ -272,7 +271,7 @@ const DashboardRed = () => {
                 )}
               </AnimatePresence>
             </div>
-            
+
             {/* Mobile Header Avatar removed as per user request */}
           </div>
         </header>
@@ -292,11 +291,10 @@ const DashboardRed = () => {
                     key={path}
                     to={path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition duration-300 ${
-                      isActive(path)
-                        ? 'bg-slate-800 text-blue-400'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                    }`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition duration-300 ${isActive(path)
+                      ? 'bg-slate-800 text-blue-400'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                      }`}
                   >
                     <Icon size={20} />
                     <span>{label}</span>
@@ -305,11 +303,10 @@ const DashboardRed = () => {
                 <Link
                   to="/dashboardRed/perfilAR"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition duration-300 ${
-                    isActive('/dashboardRed/perfilAR')
-                      ? 'bg-slate-800 text-blue-400'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                  }`}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition duration-300 ${isActive('/dashboardRed/perfilAR')
+                    ? 'bg-slate-800 text-blue-400'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                    }`}
                 >
                   <MdPerson size={20} />
                   <span>Ver perfil</span>

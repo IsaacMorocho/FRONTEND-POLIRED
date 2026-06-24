@@ -1,16 +1,16 @@
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
-import { FiAlertCircle, FiCalendar, FiChevronLeft, FiChevronRight, FiX, FiUserX, FiSmartphone } from "react-icons/fi";
+import { FiAlertCircle, FiCalendar, FiChevronLeft, FiChevronRight, FiX, FiUserX, FiSmartphone, FiAlertOctagon } from "react-icons/fi";
 import { MdWarning, MdFilterList, MdAssignmentTurnedIn, MdCheckCircle, MdCancel } from "react-icons/md";
 import { motion, AnimatePresence } from 'framer-motion';
 import superadminService from "../../services/superadminService";
 
 const ReportesPanelAdmin = () => {
-  const [activeTab, setActiveTab] = useState('app'); // 'app', 'usuarios'
+  const [activeTab, setActiveTab] = useState('app'); // 'app', 'usuarios', 'redes'
   const [dataList, setDataList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [resolviendo, setResolviendo] = useState(false);
-  
+
   // Filtros de la barra lateral
   const [estadoSeleccionado, setEstadoSeleccionado] = useState('pendiente'); // 'pendiente', 'resuelto', 'rechazado'
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('Todas');
@@ -29,6 +29,9 @@ const ReportesPanelAdmin = () => {
         setDataList(data.reportes || []);
       } else if (activeTab === 'usuarios') {
         const data = await superadminService.getReportes('usuario');
+        setDataList(data.reportes || []);
+      } else if (activeTab === 'redes') {
+        const data = await superadminService.getReportes('red');
         setDataList(data.reportes || []);
       }
     } catch (error) {
@@ -83,6 +86,21 @@ const ReportesPanelAdmin = () => {
     }
   };
 
+  const handleResolverRed = async (id, estado) => {
+    setResolviendo(true);
+    try {
+      await superadminService.resolverReporteRed(id, { estado });
+      toast.success(`Reporte de Red ${estado}`);
+      setModalDetalles({ visible: false, item: null });
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.msg || "Error al resolver el reporte");
+      console.error(error);
+    } finally {
+      setResolviendo(false);
+    }
+  };
+
   // Lógica de filtrado
   let itemsMostrados = [];
 
@@ -101,7 +119,7 @@ const ReportesPanelAdmin = () => {
   if (categoriaSeleccionada !== 'Todas') {
     filtrados = filtrados.filter(r => (r.tipo || 'Sin categoría') === categoriaSeleccionada);
   }
-  
+
   itemsMostrados = filtrados;
 
   const totalPaginas = Math.ceil(itemsMostrados.length / itemsPorPagina);
@@ -116,7 +134,17 @@ const ReportesPanelAdmin = () => {
   const getTabTitle = () => {
     if (activeTab === 'app') return 'Reportes de la Aplicación';
     if (activeTab === 'usuarios') return 'Reportes de Usuarios';
+    if (activeTab === 'redes') return 'Reportes de Redes';
     return 'Reportes';
+  };
+
+  const getPicUrl = (path) => {
+    if (!path || path === 'null' || path === 'undefined') return null;
+    if (path.startsWith('http') || path.startsWith('data:')) return path;
+    const cleanPath = path.replace(/\\/g, '/');
+    const base = import.meta.env.VITE_BACKEND_URL;
+    const cleanBase = base?.endsWith('/') ? base.slice(0, -1) : base;
+    return `${cleanBase}${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
   };
 
   return (
@@ -135,12 +163,18 @@ const ReportesPanelAdmin = () => {
         >
           <FiUserX size={18} /> Reportes Usuarios
         </button>
+        <button
+          onClick={() => setActiveTab('redes')}
+          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${activeTab === 'redes' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/50' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+        >
+          <FiAlertOctagon size={18} /> Reportes de Redes
+        </button>
 
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* ---------------- BARRA LATERAL (FILTROS) ---------------- */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="w-full lg:w-72 shrink-0 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col gap-8 shadow-xl lg:sticky lg:top-0 h-fit"
@@ -194,11 +228,10 @@ const ReportesPanelAdmin = () => {
                   <button
                     key={cat}
                     onClick={() => setCategoriaSeleccionada(cat)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                      categoriaSeleccionada === cat
-                        ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20'
-                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
-                    }`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${categoriaSeleccionada === cat
+                      ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20'
+                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+                      }`}
                   >
                     {cat}
                   </button>
@@ -234,12 +267,12 @@ const ReportesPanelAdmin = () => {
                 <AnimatePresence>
                   {itemsPaginados.map((item, idx) => {
                     let titulo = item.tipo || 'Sin Tipo';
-                    
+
                     const desc = item.descripcion || item.proposito || 'Sin descripción';
                     const estadoItem = (item.estado || item.estadoAprobacion || '').toLowerCase();
                     const isResolved = ['aprobada', 'resuelto', 'resuelta'].includes(estadoItem);
                     const isRejected = ['rechazada', 'rechazado'].includes(estadoItem);
-                    
+
                     return (
                       <motion.div
                         key={item._id || idx}
@@ -251,17 +284,17 @@ const ReportesPanelAdmin = () => {
                         onClick={() => setModalDetalles({ visible: true, item })}
                       >
                         <div className="relative h-48 bg-slate-800 overflow-hidden shrink-0">
-                          <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${activeTab === 'app' ? 'from-purple-900/50 to-blue-900/50' : 'from-red-900/50 to-orange-900/50'}`}>
+                          <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${activeTab === 'app' ? 'from-purple-900/50 to-blue-900/50' : activeTab === 'usuarios' ? 'from-red-900/50 to-orange-900/50' : 'from-orange-900/50 to-yellow-900/50'}`}>
                             {activeTab === 'app' && <MdWarning size={64} className="text-white/10" />}
                             {activeTab === 'usuarios' && <FiUserX size={64} className="text-white/10" />}
+                            {activeTab === 'redes' && <FiAlertOctagon size={64} className="text-white/10" />}
                           </div>
-                          
+
                           <div className="absolute top-4 left-4">
-                            <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg ${
-                              isResolved ? 'bg-green-600 text-white' :
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg ${isResolved ? 'bg-green-600 text-white' :
                               isRejected ? 'bg-red-600 text-white' :
-                              'bg-yellow-600 text-white'
-                            }`}>
+                                'bg-yellow-600 text-white'
+                              }`}>
                               {item.estado ? item.estado.toUpperCase() : item.estadoAprobacion ? item.estadoAprobacion.toUpperCase() : 'PENDIENTE'}
                             </span>
                           </div>
@@ -269,7 +302,7 @@ const ReportesPanelAdmin = () => {
 
                         <div className="p-5 flex-1 flex flex-col">
                           <h3 className="text-xl font-bold text-white mb-2 line-clamp-1">{titulo}</h3>
-                          
+
                           <div className="flex items-start gap-2 text-slate-400 text-sm mb-4">
                             <FiAlertCircle className="mt-1 shrink-0" />
                             <p className="line-clamp-2">{desc}</p>
@@ -306,17 +339,16 @@ const ReportesPanelAdmin = () => {
                     >
                       <FiChevronLeft size={18} /> Anterior
                     </button>
-                    
+
                     <div className="flex items-center gap-2">
                       {Array.from({ length: totalPaginas || 1 }, (_, i) => i + 1).map(pageNum => (
                         <button
                           key={pageNum}
                           onClick={() => setPaginaActual(pageNum)}
-                          className={`w-10 h-10 flex items-center justify-center rounded-xl text-base font-medium transition ${
-                            paginaActual === pageNum 
-                              ? 'border border-slate-600 text-blue-400' 
-                              : 'text-slate-400 hover:text-white'
-                          }`}
+                          className={`w-10 h-10 flex items-center justify-center rounded-xl text-base font-medium transition ${paginaActual === pageNum
+                            ? 'border border-slate-600 text-blue-400'
+                            : 'text-slate-400 hover:text-white'
+                            }`}
                         >
                           {pageNum}
                         </button>
@@ -369,10 +401,9 @@ const ReportesPanelAdmin = () => {
                 )}
                 <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
                   <span className="text-sm font-medium text-slate-400 block mb-2">Estado:</span>
-                  <span className={`text-sm font-bold block ${
-                    ['aprobada', 'resuelto', 'resuelta'].includes((modalDetalles.item?.estado || modalDetalles.item?.estadoAprobacion || '').toLowerCase()) ? 'text-green-400' :
+                  <span className={`text-sm font-bold block ${['aprobada', 'resuelto', 'resuelta'].includes((modalDetalles.item?.estado || modalDetalles.item?.estadoAprobacion || '').toLowerCase()) ? 'text-green-400' :
                     ['rechazada', 'rechazado'].includes((modalDetalles.item?.estado || modalDetalles.item?.estadoAprobacion || '').toLowerCase()) ? 'text-red-400' : 'text-yellow-400'
-                  }`}>
+                    }`}>
                     {modalDetalles.item?.estado || modalDetalles.item?.estadoAprobacion || 'Pendiente'}
                   </span>
                 </div>
@@ -387,11 +418,11 @@ const ReportesPanelAdmin = () => {
                   <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
                     <span className="text-sm font-medium text-slate-400 block mb-2">Fecha de emisión:</span>
                     <span className="text-white text-sm font-bold block">
-                      {new Date(modalDetalles.item.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' })}
+                      {new Date(modalDetalles.item.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                 )}
-                
+
                 {/* Detalles extra según tab */}
                 {activeTab === 'app' && modalDetalles.item?.reporterId && (
                   <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
@@ -451,6 +482,37 @@ const ReportesPanelAdmin = () => {
                   </div>
                 )}
 
+                {activeTab === 'redes' && (
+                  <>
+                    {modalDetalles.item?.meta?.redId && (
+                      <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col sm:flex-row items-center gap-4">
+                        <img
+                          src={getPicUrl(modalDetalles.item.meta.redId.fotoPerfil) || `https://ui-avatars.com/api/?name=${modalDetalles.item.meta.redId.nombre}&background=10b981&color=fff&size=64`}
+                          alt="Red Reportada"
+                          className="w-16 h-16 rounded-full border-2 border-slate-600 object-cover shrink-0"
+                        />
+                        <div className="text-center sm:text-left">
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">Red Reportada</span>
+                          <p className="text-white text-lg font-bold">{modalDetalles.item.meta.redId.nombre}</p>
+                          {modalDetalles.item.meta.redId.deshabilitada && (
+                            <span className="inline-block mt-1 px-2 py-0.5 bg-red-900/50 text-red-300 text-xs font-bold rounded border border-red-800">
+                              Deshabilitada actualmente
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                      <span className="text-sm font-medium text-slate-400 block mb-2">Tipo de Reporte:</span>
+                      <p className="text-white text-sm font-bold">{modalDetalles.item?.tipo}</p>
+                    </div>
+                    <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                      <span className="text-sm font-medium text-slate-400 block mb-2">Descripción:</span>
+                      <p className="text-white text-sm leading-relaxed break-words">{modalDetalles.item?.descripcion || 'Sin descripción'}</p>
+                    </div>
+                  </>
+                )}
+
                 {activeTab === 'habilitar_usuarios' && modalDetalles.item?.solicitante && (
                   <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
                     <span className="text-sm font-medium text-slate-400 block mb-2">Usuario Solicitante:</span>
@@ -504,6 +566,28 @@ const ReportesPanelAdmin = () => {
                       className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-semibold transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <MdCancel size={20} /> Desestimar
+                    </button>
+                  </div>
+                )}
+
+                {activeTab === 'redes' && modalDetalles.item?.estado === 'pendiente' && (
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={() => handleResolverRed(modalDetalles.item._id, 'Resuelta')}
+                      disabled={resolviendo}
+                      className="flex-1 bg-orange-600 hover:bg-orange-500 text-white py-2 rounded-xl transition flex flex-col items-center justify-center gap-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <div className="flex items-center gap-2 font-semibold">
+                        <MdCheckCircle size={20} /> Aceptar Reporte
+                      </div>
+                      <span className="text-[10px] font-normal text-orange-200 text-center leading-tight">Se otorgará un strike a la red reportada</span>
+                    </button>
+                    <button
+                      onClick={() => handleResolverRed(modalDetalles.item._id, 'Rechazada')}
+                      disabled={resolviendo}
+                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-semibold transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <MdCancel size={20} /> Rechazar
                     </button>
                   </div>
                 )}

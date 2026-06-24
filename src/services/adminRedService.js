@@ -57,6 +57,11 @@ const adminRedService = {
     return response.data;
   },
 
+  solicitarRevocacionAdmin: async (data) => {
+    const response = await apiClient.post('/redes/solicitar/revocar-admin', data);
+    return response.data;
+  },
+
   getReportesGenerales: async () => {
     const response = await apiClient.get('/reportes');
     return response.data;

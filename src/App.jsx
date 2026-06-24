@@ -17,6 +17,7 @@ import Solicitudes from './pages/Solicitudes'
 import SolicitudesRedes from './pages/SolicitudesRedes'
 import ReportesSolicitudesAR from './pages/ReportesSolicitudesAR'
 import EstudiantesAR from './pages/EstudiantesAR'
+import RevocarRolAR from './pages/RevocarRolAR'
 import Estudiantes from './pages/Estudiantes'
 import Reset from './pages/recuperarpassword'
 import ResetSP from './pages/recuperarpasswordSP'
@@ -32,9 +33,9 @@ function App() {
       <ToastContainer
         autoClose={3000}
         position="top-right"
-        theme="colored" 
+        theme="colored"
         hideProgressBar
-        pauseOnFocusLoss={false} 
+        pauseOnFocusLoss={false}
         closeOnClick
       />
       <Routes>
@@ -54,7 +55,7 @@ function App() {
         <Route path="recuperarpassword-e/:token" element={<Reset />} />
         <Route path="recuperarpassword/:token" element={<ResetSP />} />
         <Route path="confirmar-cuenta/:token" element={<ConfirmarCuenta />} />
-        <Route path="crearApelacion" element={<ApelarPage/>}/>
+        <Route path="crearApelacion" element={<ApelarPage />} />
 
         {/* Protegidas por rol */}
         {/* ADMINISTRADOR DE RED */}
@@ -67,12 +68,13 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="perfilAR" element={<ProfileAR/>}/>
+          <Route path="perfilAR" element={<ProfileAR />} />
           <Route path="redesAR" element={<RedesAR />} />
           <Route path="reportes" element={<ReportesSolicitudesAR />} />
           <Route path="estudiantes" element={<EstudiantesAR />} />
+          <Route path="revocar-rol" element={<RevocarRolAR />} />
         </Route>
-      
+
         {/* SUPER ADMINISTRADOR */}
         <Route
           path="dashboard"
