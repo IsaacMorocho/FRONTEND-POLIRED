@@ -104,12 +104,11 @@ const SolicitudesRedesPanelAdmin = () => {
   const handleResolverRevocacion = async (item, accion) => {
     setResolverLoading(true);
     try {
-      const redId = getSolicitudRedId(item);
-      if (!redId) {
-        toast.error("No se pudo identificar la red asociada a la solicitud");
+      if (!item._id) {
+        toast.error("No se pudo identificar la solicitud");
         return;
       }
-      await superadminService.resolverSolicitudRevocarAdminRed(redId, {
+      await superadminService.resolverSolicitudRevocarAdminRed(item._id, {
         accion,
         respuesta: accion === 'Aprobar' ? 'Te he revocado el rol' : 'No se aprobó la revocación del rol',
       });

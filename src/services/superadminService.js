@@ -148,12 +148,12 @@ const superadminService = {
   },
 
   resolverSolicitudVerificacion: async (id, data) => {
-    const response = await apiClient.patch(`/superadmin/solicitudes/verificacion/${id}/resolver`, data);
+    const response = await apiClient.patch(`/redes/solicitudes/${id}/resolver-verificacion`, data);
     return response.data;
   },
 
   resolverSolicitudOficializacion: async (id, data) => {
-    const response = await apiClient.patch(`/superadmin/solicitudes/oficializacion/${id}/resolver`, data);
+    const response = await apiClient.patch(`/redes/solicitudes/${id}/resolver-oficializacion`, data);
     return response.data;
   },
 
@@ -162,8 +162,8 @@ const superadminService = {
     return response.data;
   },
 
-  resolverSolicitudRevocarAdminRed: async (redId, data) => {
-    const response = await apiClient.patch(`/red/${redId}/resolver/revocar-rol`, data);
+  resolverSolicitudRevocarAdminRed: async (id, data) => {
+    const response = await apiClient.patch(`/red/${id}/resolver/revocar-rol`, data);
     return response.data;
   },
 
