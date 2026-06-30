@@ -38,7 +38,7 @@ const RedGlobalPanelAdmin = () => {
       const combined = [...(resPub.reportes || []), ...(resArt.reportes || [])];
       
       const mapped = combined.map(item => {
-        let catLegible = 'Desconocida';
+        let catLegible = 'Articulo (Eliminado)';
         if (item.subtype === 'publicacion') {
           catLegible = 'Noticias';
         } else if (item.subtype === 'articulo') {
