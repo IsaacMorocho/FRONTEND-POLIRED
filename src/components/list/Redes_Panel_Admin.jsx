@@ -159,6 +159,7 @@ const RedesPanelAdmin = () => {
                           className="absolute top-4 right-4 z-10 p-2 rounded-full bg-red-950/80 text-red-300 border border-red-800/60 hover:bg-red-900 hover:text-white transition shadow-lg"
                           title="Eliminar red"
                         >
+
                           <MdDelete size={18} />
                         </button>
                         <div className="relative mb-4">
@@ -504,7 +505,12 @@ const RedesPanelAdmin = () => {
                 ¿Deseas eliminar la red comunitaria <span className="text-white font-semibold">{modalEliminar.red.nombre}</span>?
               </p>
               <div className="bg-red-950/30 border border-red-900/50 rounded-xl p-4 text-sm text-red-100/80">
-                Se eliminará la red seleccionada mediante el endpoint configurado para SuperAdmin.
+                Para eliminar una red comunitaria deben haberse cumplido simultaneamente estas reglas:
+                “La red comunitaria no debe contar con un administrador activo”. 
+                "La red comunitaria no debe tener miembros asociados”. 
+                “La red comunitaria debe encontrarse en estado deshabilitado”. 
+                “La red comunitaria debe haber permanecido inactiva durante un periodo mínimo de noventa (90) días”.
+                Caso contrario la acción no se podrá completar.
               </div>
             </div>
 
